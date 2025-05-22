@@ -13,7 +13,7 @@ An application designed to facilitate the automated deployment of containerized 
 As a first step, it is necessary to install the minimum dependencies for the application to function:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip nginx curl
+apt install -y python3-venv python3-pip nginx curl git
 ```
 
 Next, we will proceed to install Docker using the official script:
