@@ -1,0 +1,114 @@
+{% extends '../base.html' %}
+
+{% block title %}
+  Edit Project
+{% endblock %}
+
+{% block content %}
+  <h2>Edit Project: <a target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a></h2>
+
+  {% if is_docker_compose_project %}
+    <form method="post" style="margin-top: 1em;">
+      {% csrf_token %}
+      <button type="submit" name="reboot_project" style="background-color: orange; padding: 0.5em;">Reboot Project</button>
+    </form>
+  {% endif %}
+
+  {% if is_docker_compose_project %}
+    <form method="post" style="margin-top: 1em;">
+      {% csrf_token %}
+      <button type="submit" name="rebuild_project" style="background-color: orange; padding: 0.5em;">Rebuild Project</button>
+    </form>
+  {% endif %}
+
+  {% if saved_successfully %}
+    <p style="color: green;">Changes saved successfully!</p>
+  {% endif %}
+
+  {% if reboot_successfully == True %}
+    <p style="color: green;">Project rebooted successfully!</p>
+  {% elif reboot_successfully == False %}
+    <p style="color: red;">Failed to reboot project.</p>
+  {% endif %}
+
+  {% if rebuild_successfully == True %}
+    <p style="color: green;">Project rebuilt successfully!</p>
+  {% elif rebuild_successfully == False %}
+    <p style="color: red;">Failed to rebuild project.</p>
+  {% endif %}
+
+  <h3>Secret</h3>
+  {% if project.has_secret %}
+    <a href="{% url 'reset_project_secret' project.id %}">Reset Secret</a>
+    - <a href="{% url 'delete_project_secret' project.id %}">Delete Secret</a>
+  {% else %}
+    - <a href="{% url 'reset_project_secret' project.id %}">Create Secret</a>
+  {% endif %}
+
+  <hr />
+  <h3>SSH Key</h3>
+  {% if project.has_ssh_key %}
+    <p>
+      <strong>Status:</strong> SSH key is already stored.
+    </p>
+  {% else %}
+    <p>
+      <strong>Status:</strong> No SSH key saved yet.
+    </p>
+  {% endif %}
+
+  <hr />
+  <h3>Recent Deployments</h3>
+  <ul>
+    {% for deployment in deployments_data %}
+      <li>
+        <strong>Commit ID:</strong> {{ deployment.commit_id }} <br />
+        <strong>Commit URL:</strong> <a href="{{ deployment.commit_url }}" target="_blank">View Commit</a> <br />
+        <strong>Status:</strong> {{ deployment.status }} <br />
+        <strong>Timestamp:</strong> {{ deployment.created_at_formatted }} <br />
+
+        <a href="#deployment-{{ deployment.id }}" onclick="document.getElementById('deployment-{{ deployment.id }}').style.display = 'block';">View Status Messages</a>
+
+        <!-- Detailed View of Status Messages -->
+        <div id="deployment-{{ deployment.id }}" style="display: none;">
+          <h4>Status Messages:</h4>
+          {% if deployment.status_messages %}
+            <ul>
+              {% for message in deployment.status_messages %}
+                <li>{{ message.timestamp_formatted }}: {{ message.message }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No status messages for this deployment.</p>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <hr />
+  <form method="post">
+    {% csrf_token %}
+
+    <h3>Project Info</h3>
+    {{ form.as_p }}
+
+    <h3>Private Files</h3>
+    {{ formset.management_form }}
+    <table>
+      {% for file_form in formset %}
+        <tr>
+          <td>{{ file_form.id }}{{ file_form.filename }}</td>
+          <td>{{ file_form.filepath }}</td>
+          <td>{{ file_form.plain_content }}</td>
+          <td>{{ file_form.DELETE }} Delete</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <br />
+    <button type="submit">Save Changes</button>
+    <a href="{% url 'project_list' %}">Cancel</a>
+    - <a href="{% url 'delete_project' project.id %}">Delete Project</a>
+  </form>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends '../base.html' %}
+{% block title %}
+  Uninitialized Project
+{% endblock %}
+{% block content %}
+  <h2>Uninitialized Project</h2>
+  <p>Go to GitHub and send a ping event to finish configuration.</p>
+  <a href="{% url 'project_list' %}">Go back</a> - <a href="{% url 'delete_project' project.id %}">Delete Project</a> - <a href="{% url 'reset_project_secret' project.id %}">Reset Secret</a>
+{% endblock %}

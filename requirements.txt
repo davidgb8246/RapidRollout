@@ -1,0 +1,10 @@
+asgiref==3.8.1
+cffi==1.17.1
+cryptography==45.0.2
+Django==5.2.1
+django-filter==25.1
+djangorestframework==3.16.0
+Markdown==3.8
+pycparser==2.22
+python-decouple==3.8
+sqlparse==0.5.3

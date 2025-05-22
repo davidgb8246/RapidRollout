@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.egg
+*.pyo
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# Django stuff
+db.sqlite3
+db.sqlite3-journal
+*.log
+
+# Django static/media if generated (optional)
+staticfiles/
+media/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*~
+*.bak
+*.tmp
+
+# macOS
+.DS_Store
+
+# Coverage / testing
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# Migrations (optional — include if you don't want to track them)
+# ** Be careful — recommended to keep migrations in version control **
+# ** Uncomment only if you know what you're doing **
+# */migrations/
+# !*/migrations/__init__.py

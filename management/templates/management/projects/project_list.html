@@ -1,0 +1,19 @@
+{% extends '../base.html' %}
+{% block title %}
+  Your Projects
+{% endblock %}
+{% block content %}
+  <h2>Your Projects</h2>
+  <a href="{% url 'create_project' %}">+ New Project</a>
+  <ul>
+    {% for project in projects %}
+      <li>
+        <a target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a>
+        
+        | <a href="{% url 'edit_project' project.id %}">Edit</a>
+      </li>
+    {% empty %}
+      <li>No projects yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

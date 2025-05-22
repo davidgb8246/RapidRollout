@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      {% block title %}
+        App
+      {% endblock %}
+    </title>
+  </head>
+  <body>
+    <ul>
+      {% if user.is_authenticated %}
+        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'project_list' %}">My Projects</a></li>
+
+        {% if user.is_superuser %}
+          <li><a href="{% url 'user_list' %}">Manage Users</a></li>
+        {% endif %}
+
+        <br>
+        <hr>
+        <br>
+
+        <li>User: {{ user.get_username }}</li>
+        <li>
+          <form action="{% url 'logout' %}?next={{ request.path }}" method="post">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+          </form>
+        </li>
+      {% else %}
+        <li>
+          <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
+        </li>
+      {% endif %}
+    </ul>
+    <hr />
+    {% block content %}
+
+    {% endblock %}
+  </body>
+</html>
