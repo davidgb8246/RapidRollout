@@ -17,6 +17,9 @@ ENV/
 .env
 .env.*
 
+# But track .env.example
+!.env.example
+
 # Django stuff
 db.sqlite3
 db.sqlite3-journal
