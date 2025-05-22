@@ -4,7 +4,9 @@ cryptography==45.0.2
 Django==5.2.1
 django-filter==25.1
 djangorestframework==3.16.0
+gunicorn==23.0.0
 Markdown==3.8
+packaging==25.0
 pycparser==2.22
 python-decouple==3.8
 sqlparse==0.5.3
