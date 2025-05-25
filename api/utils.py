@@ -35,17 +35,11 @@ def run_command_as_user(command: str, target_user: str):
             check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
-        print(result.stdout)
-        print(result.stderr)
-
         return {
             "success": True,
             "message": result.stdout,
         }
     except subprocess.CalledProcessError as e:
-        print(e.stdout)
-        print(e.stderr)
-
         return {
             "success": False,
             "message": e.stderr,
