@@ -68,12 +68,19 @@ class PrivateFileForm(forms.ModelForm):
         label="Content"
     )
 
+    file_type = forms.ChoiceField(
+        choices=PrivateFile.FileType.choices,
+        label="File Type",
+        required=True,
+    )
+
     class Meta:
         model = PrivateFile
-        fields = ['filename', 'filepath', 'plain_content']
+        fields = ['filename', 'filepath', 'plain_content', 'fileperms', 'file_type']
         widgets = {
             'filename': forms.TextInput(attrs={'placeholder': 'e.g., config.json'}),
             'filepath': forms.TextInput(attrs={'placeholder': 'e.g., /app/config/'}),
+            'fileperms': forms.TextInput(attrs={'placeholder': 'e.g., 600'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -82,6 +89,7 @@ class PrivateFileForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             content = self.instance.get_content()
             self.fields['plain_content'].initial = content
+            self.fields['file_type'].initial = self.instance.file_type
 
     def clean_filepath(self):
         filepath = self.cleaned_data.get('filepath')
@@ -94,11 +102,18 @@ class PrivateFileForm(forms.ModelForm):
             
         return filepath
 
+    def clean_fileperms(self):
+        fileperms = self.cleaned_data.get('fileperms')
+        if not fileperms.isdigit() or len(fileperms) != 3 or not all(c in '01234567' for c in fileperms):
+            raise forms.ValidationError("Enter a valid 3-digit Unix file permission (e.g., 644, 600).")
+        return fileperms
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         content = self.cleaned_data.get('plain_content')
         if content:
             instance.set_content(content, commit=False)
+        instance.file_type = self.cleaned_data.get('file_type')
         if commit:
             instance.save()
         return instance

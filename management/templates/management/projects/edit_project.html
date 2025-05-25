@@ -12,14 +12,17 @@
       {% csrf_token %}
       <button type="submit" name="reboot_project" style="background-color: orange; padding: 0.5em;">Reboot Project</button>
     </form>
-  {% endif %}
 
-  {% if is_docker_compose_project %}
     <form method="post" style="margin-top: 1em;">
       {% csrf_token %}
       <button type="submit" name="rebuild_project" style="background-color: orange; padding: 0.5em;">Rebuild Project</button>
     </form>
   {% endif %}
+
+  <form method="post" style="margin-top: 1em;">
+    {% csrf_token %}
+    <button type="submit" name="save_private_files" style="background-color: orange; padding: 0.5em;">Save Private Files</button>
+  </form>
 
   {% if saved_successfully %}
     <p style="color: green;">Changes saved successfully!</p>
@@ -35,6 +38,12 @@
     <p style="color: green;">Project rebuilt successfully!</p>
   {% elif rebuild_successfully == False %}
     <p style="color: red;">Failed to rebuild project.</p>
+  {% endif %}
+
+  {% if private_files_saved_successfully == True %}
+    <p style="color: green;">Project private files successfully saved!</p>
+  {% elif private_files_saved_successfully == False %}
+    <p style="color: red;">Failed to save project private files.</p>
   {% endif %}
 
   <h3>Secret</h3>
@@ -96,14 +105,28 @@
     <h3>Private Files</h3>
     {{ formset.management_form }}
     <table>
-      {% for file_form in formset %}
+      <thead>
         <tr>
-          <td>{{ file_form.id }}{{ file_form.filename }}</td>
-          <td>{{ file_form.filepath }}</td>
-          <td>{{ file_form.plain_content }}</td>
-          <td>{{ file_form.DELETE }} Delete</td>
+          <th>Filename</th>
+          <th>Filepath</th>
+          <th>Content</th>
+          <th>Permissions</th>
+          <th>File Type</th>
+          <th>Delete</th>
         </tr>
-      {% endfor %}
+      </thead>
+      <tbody>
+        {% for file_form in formset %}
+          <tr>
+            <td>{{ file_form.id }}{{ file_form.filename }}</td>
+            <td>{{ file_form.filepath }}</td>
+            <td>{{ file_form.plain_content }}</td>
+            <td>{{ file_form.fileperms }}</td>
+            <td>{{ file_form.file_type }}</td>
+            <td>{{ file_form.DELETE }} Delete</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
 
     <br />

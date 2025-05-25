@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Project, Deployment, DeploymentStatusMessage, PrivateFile
+from management.models import UserProfile, Project, Deployment, DeploymentStatusMessage, PrivateFile
 
 
 @admin.register(UserProfile)

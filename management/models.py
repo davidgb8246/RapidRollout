@@ -1,4 +1,8 @@
 import secrets
+import os
+import json
+import shlex
+
 from typing import Literal
 from django.db import models
 from django.contrib.auth.models import User
@@ -6,7 +10,7 @@ from django.conf import settings
 from cryptography.fernet import InvalidToken
 from uuid import uuid4
 
-from api.utils import run_command_as_user, check_docker_compose_environment, check_folder_exists, get_user_home, save_private_file_to_sys
+from api.utils import run_command_as_user, check_docker_compose_environment, check_folder_exists, get_user_home
 
 
 
@@ -100,12 +104,18 @@ class Project(models.Model):
     def has_ssh_key(self):
         return bool(self.encrypted_ssh_key)
     
-    def has_private_files(self) -> bool:
-        return self.private_files.exists()
+    def has_private_files(self, file_type: str | None = None) -> bool:
+        qs = self.private_files.all()
+        if file_type:
+            qs = qs.filter(file_type=file_type)
+        return qs.exists()
 
-    def get_private_files(self):
-        return self.private_files.all().order_by('-updated_at')
-    
+    def get_private_files(self, file_type: str | None = None):
+        qs = self.private_files.all()
+        if file_type:
+            qs = qs.filter(file_type=file_type)
+        return qs.order_by('-updated_at')
+
     def get_project_dir(self) -> str:
         return f"{get_user_home(self.profile.get_sys_username())}/{self.name}/"
     
@@ -117,22 +127,39 @@ class Project(models.Model):
             return False
         
         if rebuild:
-            priv_files_failed = False
             if self.has_private_files():
+                priv_files_failed = False
                 priv_files: list[PrivateFile] = self.get_private_files()
                 
                 for file in priv_files:
-                    save_file_command = save_private_file_to_sys(file)
+                    save_file_command = file.save_to_sys()
                     if not save_file_command['success']:
                         if not priv_files_failed:
                             priv_files_failed = True
             
-            
-            if priv_files_failed:
-                return False
+                if priv_files_failed:
+                    return False
         
         reboot_command = run_command_as_user(f"cd {project_dir} && docker compose down && docker compose up -d {'--build' if rebuild else ''}", system_user)
-        return reboot_command['success']
+        if not reboot_command['success']:
+            return False
+        
+        if self.has_private_files(PrivateFile.FileType.AFTER_START_SCRIPT):
+            exec_files_failed = False
+                
+            files: list[PrivateFile] = self.private_files.filter(file_type=PrivateFile.FileType.AFTER_START_SCRIPT)
+            method_action = "PROJECT_REBUILD" if rebuild else "PROJECT_REBOOT"
+
+            for file in files:
+                result = file.execute(action=method_action)
+                if not result['success']:
+                    exec_files_failed = True
+
+            if exec_files_failed:
+                return False
+            
+        return True
+
     
     def delete(self, *args, **kwargs):
         self.before_delete_cleanup()
@@ -174,7 +201,6 @@ class Project(models.Model):
 
     def __str__(self):
         return f"Project for {self.profile.user.username} - {self.repository_url}"
-
 
 
 class Deployment(models.Model):
@@ -225,16 +251,45 @@ class DeploymentStatusMessage(models.Model):
     
 
 class PrivateFile(models.Model):
+    class FileType(models.TextChoices):
+        DEFAULT = 'DEFAULT', 'Default File type'
+        ENV = 'ENV', 'ENV File type'
+        AFTER_START_SCRIPT = 'AFTER_START_SCRIPT', 'After Start Script File type'
+
+    FILE_TYPE_IMPORTANCE = {
+        FileType.AFTER_START_SCRIPT: 1,
+        FileType.ENV: 2,
+        FileType.DEFAULT: 3,
+    }
+
+    EXECUTABLE_FILE_TYPES = {
+        FileType.AFTER_START_SCRIPT
+    }
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='private_files')
 
     content = models.BinaryField(blank=True, null=True)
     filename = models.CharField(max_length=255)
     filepath = models.CharField(max_length=1024, blank=True, null=True)
-    
+    fileperms = models.CharField(max_length=3, default="600")
+
+    file_type = models.CharField(
+        max_length=20,
+        choices=FileType.choices,
+        default=FileType.DEFAULT,
+        help_text="Type of the private file"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    def is_executable(self) -> bool:
+        return self.file_type in self.EXECUTABLE_FILE_TYPES
+
+    def get_importance_level(self) -> int:
+        return self.FILE_TYPE_IMPORTANCE.get(self.file_type, 99)
+
     def set_content(self, plain_content: str, commit: bool = False):
         self.content = settings.FERNET.encrypt(plain_content.encode('utf-8').replace(b'\r', b''))
         if commit:
@@ -252,5 +307,123 @@ class PrivateFile(models.Model):
         self.content = None
         self.save()
 
+    def get_full_path_info(self) -> dict:
+        relative_path = self.filepath if isinstance(self.filepath, str) else ""
+        has_placeholder = relative_path.startswith(":root:")
+        user_home = get_user_home(self.project.profile.get_sys_username())
+
+        if user_home is None:
+            return {
+                "success": False,
+                "message": "No se pudo obtener el home del usuario.",
+            }
+
+        full_path = (
+            f"{user_home}/{self.project.name}/{relative_path}"
+            if not has_placeholder
+            else relative_path.replace(":root:", "", 1)
+        )
+        file_full_path = f"{full_path.rstrip('/')}/{self.filename}"
+
+        return {
+            "success": True,
+            'has_placeholder': has_placeholder,
+            'file_name': self.filename,
+            'full_path': full_path,
+            'file_full_path': file_full_path,
+        }
+
+    def save_to_sys(self) -> dict:
+        system_user = self.project.profile.get_sys_username()
+        user_home = get_user_home(system_user)
+
+        if user_home is None:
+            return {
+                "success": False,
+                "message": "No se pudo obtener el home del usuario.",
+            }
+
+        # Define file path inside user's home directory
+        file_path_data = self.get_full_path_info()
+        if not file_path_data['success']:
+            return {
+                "success": False,
+                "message": f"No se pudo obtener la ruta del fichero: {file_path_data['message']}",
+            }
+        
+        full_path = file_path_data['full_path']
+        file_full_path = file_path_data['file_full_path']
+        has_placeholder = file_path_data['has_placeholder']
+
+        # Ensure the parent directory exists
+        parent_dir = os.path.dirname(full_path)
+        create_dir_result = run_command_as_user(f"mkdir -p {parent_dir}", system_user if not has_placeholder else "root")
+        if not create_dir_result['success']:
+            return {
+                "success": False,
+                "message": f"No se pudo crear el directorio: {create_dir_result['message']}",
+            }
+
+        # Get decrypted content
+        content = self.get_content()
+        if content is None:
+            return {
+                "success": False,
+                "message": "El archivo no tiene contenido válido.",
+            }
+
+        # Save content to file using here-document to prevent variable expansion
+        write_cmd = f"""cat << 'EOF' > "{file_full_path}"
+{content}
+EOF"""
+        result = run_command_as_user(write_cmd, system_user if not has_placeholder else "root")
+        if not result['success']:
+            return {
+                "success": False,
+                "message": f"No se pudo guardar el archivo: {result['message']}",
+            }
+
+        # Set secure permissions
+        perm_result = run_command_as_user(f"chmod {self.fileperms} '{file_full_path}'", system_user if not has_placeholder else "root")
+        if not perm_result['success']:
+            return {
+                "success": False,
+                "message": f"No se pudieron asignar permisos: {perm_result['message']}",
+            }
+
+        return {
+            "success": True,
+            "message": f"Archivo guardado correctamente en {full_path}",
+            "path": full_path,
+        }
+    
+
+    def execute(self, **kwargs) -> dict:
+        if not self.is_executable():
+            return {
+                "success": False,
+                "message": f"El tipo de fichero {self.file_type} no es un ejecutable."
+            }
+
+        file_data = self.get_full_path_info()
+        if not file_data['success']:
+            return {
+                "success": False,
+                "message": file_data['message'],
+            }
+
+        system_user = self.project.profile.get_sys_username()
+        kwargs['user'] = system_user if not kwargs.get('user', None) else kwargs['user']
+
+        kwargs_json = json.dumps(kwargs)
+        safe_json_arg = shlex.quote(kwargs_json)
+        
+        script_path = file_data['full_path']
+        script_full_path = file_data['file_full_path']
+        command = f"cd {script_path} && bash {script_full_path} {safe_json_arg}"
+
+        return run_command_as_user(command, "root")
+
+
     def __str__(self):
-        return f"PrivateFile {self.filename} for Project {self.project.name}"
+        return f"PrivateFile {self.filename} ({self.file_type}) for Project {self.project.name}"

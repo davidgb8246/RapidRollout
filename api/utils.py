@@ -35,11 +35,17 @@ def run_command_as_user(command: str, target_user: str):
             check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
+        print(result.stdout)
+        print(result.stderr)
+
         return {
             "success": True,
             "message": result.stdout,
         }
     except subprocess.CalledProcessError as e:
+        print(e.stdout)
+        print(e.stderr)
+
         return {
             "success": False,
             "message": e.stderr,
@@ -179,63 +185,3 @@ def delete_ssh_key_in_user_home(system_user):
         }
     else:
         return delete_result
-
-
-def save_private_file_to_sys(private_file) -> dict:
-    from management.models import PrivateFile
-    private_file: PrivateFile = private_file
-
-    system_user = private_file.project.profile.get_sys_username()
-    user_home = get_user_home(system_user)
-
-    if user_home is None:
-        return {
-            "success": False,
-            "message": "No se pudo obtener el home del usuario.",
-        }
-
-    # Define file path inside user's home directory
-    relative_path = private_file.filepath if private_file.filepath else ""
-    full_path = f"{user_home}/{private_file.project.name}/{relative_path}"
-    file_full_path = f"{full_path}/{private_file.filename}"
-
-    # Ensure the parent directory exists
-    parent_dir = os.path.dirname(full_path)
-    create_dir_result = run_command_as_user(f"mkdir -p {parent_dir}", system_user)
-    if not create_dir_result['success']:
-        return {
-            "success": False,
-            "message": f"No se pudo crear el directorio: {create_dir_result['message']}",
-        }
-
-    # Get decrypted content
-    content = private_file.get_content()
-    if content is None:
-        return {
-            "success": False,
-            "message": "El archivo no tiene contenido válido.",
-        }
-
-    # Save content to file
-    escaped_content = content.replace('"', '\\"')  # escape quotes to prevent shell issues
-    write_cmd = f'echo "{escaped_content}" > "{file_full_path}"'
-    result = run_command_as_user(write_cmd, system_user)
-    if not result['success']:
-        return {
-            "success": False,
-            "message": f"No se pudo guardar el archivo: {result['message']}",
-        }
-
-    # Set secure permissions
-    perm_result = run_command_as_user(f"chmod 600 '{file_full_path}'", system_user)
-    if not perm_result['success']:
-        return {
-            "success": False,
-            "message": f"No se pudieron asignar permisos: {perm_result['message']}",
-        }
-
-    return {
-        "success": True,
-        "message": f"Archivo guardado correctamente en {full_path}",
-        "path": full_path,
-    }

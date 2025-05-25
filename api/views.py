@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 
 from management.models import PrivateFile, Project, Deployment
-from api.utils import delete_ssh_key_in_user_home, save_private_file_to_sys, verify_github_signature, clone_git_repo_with_ssh_key, check_docker_compose_environment, check_folder_exists, sys_get_or_create_user, run_command_as_user, get_user_home, store_ssh_key_in_user_home
+from api.utils import delete_ssh_key_in_user_home, verify_github_signature, clone_git_repo_with_ssh_key, check_docker_compose_environment, check_folder_exists, sys_get_or_create_user, run_command_as_user, get_user_home, store_ssh_key_in_user_home
 
 
 class GithubViewSet(viewsets.ViewSet):
@@ -58,7 +58,7 @@ class GithubViewSet(viewsets.ViewSet):
             priv_files: list[PrivateFile] = project.get_private_files()
             
             for file in priv_files:
-                save_file_command = save_private_file_to_sys(file)
+                save_file_command = file.save_to_sys()
                 if not save_file_command['success']:
                     if not priv_files_failed:
                         deployment.set_status("failed")
@@ -99,6 +99,25 @@ class GithubViewSet(viewsets.ViewSet):
                     'errors': [{'field': 'compose', 'message': 'Hubo un problema al levantar el entorno Docker Compose.'}],
                     'status': 'DOCKER_COMPOSE_UP_FAILED',
                 }, status=status.HTTP_400_BAD_REQUEST)
+            
+        exec_files_failed = False
+        if project.has_private_files(PrivateFile.FileType.AFTER_START_SCRIPT):
+            files: list[PrivateFile] = project.private_files.filter(file_type=PrivateFile.FileType.AFTER_START_SCRIPT)
+            for file in files:
+                result = file.execute(action="PROJECT_DEPLOY", deployment_id=str(deployment.id))
+                if not result['success']:
+                    if not exec_files_failed:
+                        deployment.set_status("failed")
+                        exec_files_failed = True
+                    
+                    deployment.add_status_message(f"Hubo un problema al ejecutar el script con id: {file.id}.")
+        
+        if exec_files_failed:
+            return Response({
+                'data': None,
+                'errors': [{'field': 'after_scripts_files', 'message': 'Hubo un problema al ejecutar los scripts posteriores de construcción del proyecto.'}],
+                'status': 'AFTER_SCRIPTS_FILES_EXECUTE_FAILED',
+            }, status=status.HTTP_400_BAD_REQUEST)
             
         deployment.set_status("completed")
         return Response({
@@ -255,3 +274,46 @@ class GithubViewSet(viewsets.ViewSet):
         payload['project'] = project
 
         return supported_events[github_event](payload)
+
+
+    @action(detail=False, methods=['post'])
+    def addDeploymentStatusMessage(self, request):
+        request_secret = request.data.get("secret", None)
+        deployment_id = request.data.get("deployment_id", None)
+        message = request.data.get("message", None)
+
+        if not deployment_id or not message or not request_secret:
+            errors = []
+            if not request_secret: errors.append({'field': 'request_secret', 'message': 'El campo "request_secret" es requerido.'})
+            if not deployment_id: errors.append({'field': 'deployment_id', 'message': 'El campo "deployment_id" es requerido.'})
+            if not message: errors.append({'field': 'message', 'message': 'El campo "message" es requerido.'})
+
+            return Response({
+                'data': None,
+                'errors': errors,
+                'status': 'MISSING_REQUIRED_FIELDS',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        deployment = Deployment.objects.filter(id=deployment_id).first()
+        if not deployment:
+            return Response({
+            'data': None,
+            'errors': [{'field': 'deployment', 'message': 'Ese despliegue no esta registrado en el servicio de despliegue.'}],
+            'status': 'DEPLOYMENT_NOT_REGISTERED',
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        project: Project = deployment.project
+        if not project.check_secret(request_secret):
+            return Response({
+                'data': None,
+                'errors': [{'field': 'secret', 'message': 'La clave secreta es incorrecta.'}],
+                'status': 'AUTHENTICATION_FAILED',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        deployment.add_status_message(message)
+
+        return Response({
+            'data': None,
+            'errors': None,
+            'status': 'STATUS_MESSAGE_CREATED',
+        }, status=status.HTTP_201_CREATED)

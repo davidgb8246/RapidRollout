@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.db.models import Case, When, Value, IntegerField
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import modelformset_factory
@@ -79,11 +80,22 @@ def edit_project(request, project_id):
     deployments_data = DeploymentSerializer(project.deployments.all().order_by('-created_at')[:5], many=True).data
 
     PrivateFileFormSet = modelformset_factory(PrivateFile, form=PrivateFileForm, extra=1, can_delete=True)
-    queryset = project.private_files.all()
+    importance_cases = [
+        When(file_type=ft, then=Value(level))
+        for ft, level in PrivateFile.FILE_TYPE_IMPORTANCE.items()
+    ]
+    queryset = project.private_files.annotate(
+        importance=Case(
+            *importance_cases,
+            default=Value(99),
+            output_field=IntegerField()
+        )
+    ).order_by('importance', 'filename')
 
     saved_successfully = False
     reboot_successfully = None
     rebuild_successfully = None
+    private_files_saved_successfully = None
     is_docker_compose_project = check_docker_compose_environment(project_dir, system_user)
 
     if request.method == 'POST':
@@ -95,6 +107,13 @@ def edit_project(request, project_id):
             
         elif 'rebuild_project' in request.POST:
             rebuild_successfully = project.reboot_project(True)
+            
+        elif 'save_private_files' in request.POST:
+            private_files_saved_successfully = True
+
+            for file in project.get_private_files():
+                if not file.save_to_sys()['success']:
+                    private_files_saved_successfully = False
 
         elif form.is_valid() and formset.is_valid():
             form.save()
@@ -108,7 +127,13 @@ def edit_project(request, project_id):
                 obj.delete()
 
             saved_successfully = True
-            queryset = project.private_files.all()
+            queryset = project.private_files.annotate(
+                importance=Case(
+                    *importance_cases,
+                    default=Value(99),
+                    output_field=IntegerField()
+                )
+            ).order_by('importance', 'filename')
             formset = PrivateFileFormSet(queryset=queryset)
 
     form = ProjectEditForm(instance=project, initial={'ssh_private_key': ''})
@@ -122,6 +147,7 @@ def edit_project(request, project_id):
         'saved_successfully': saved_successfully,
         'reboot_successfully': reboot_successfully,
         'rebuild_successfully': rebuild_successfully,
+        'private_files_saved_successfully': private_files_saved_successfully,
         'is_docker_compose_project': is_docker_compose_project,
     })
 
