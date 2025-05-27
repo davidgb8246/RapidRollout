@@ -1,19 +1,109 @@
 {% extends '../base.html' %}
-{% block title %}
-  Your Projects
-{% endblock %}
+
+{% block title %}Your Projects - RapidRollout{% endblock %}
+
 {% block content %}
-  <h2>Your Projects</h2>
-  <a href="{% url 'create_project' %}">+ New Project</a>
-  <ul>
-    {% for project in projects %}
-      <li>
-        <a target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a>
-        
-        | <a href="{% url 'edit_project' project.id %}">Edit</a>
-      </li>
-    {% empty %}
-      <li>No projects yet.</li>
-    {% endfor %}
-  </ul>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #f8f9fa;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        a {
+            color: #5c7cfa;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+
+        a:hover {
+            color: #4c6ef5;
+        }
+
+        .new-project-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #3b82f6;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            color: #fff;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .new-project-link:hover {
+            background-color: #2563eb;
+            color: #fff;
+        }
+
+        ul.project-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul.project-list li {
+            background-color: #2c2f33;
+            margin-bottom: 0.75rem;
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ul.project-list li a.repo-link {
+            flex-grow: 1;
+            overflow-wrap: anywhere;
+            color: #60a5fa;
+            font-weight: 500;
+            transition: color 0.2s ease-in-out;
+        }
+
+        ul.project-list li a.repo-link:hover {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        ul.project-list li a.edit-link {
+            font-size: 0.9rem;
+            background-color: #6b7280;
+            color: #f3f4f6;
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.3rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            margin-left: 1rem;
+            white-space: nowrap;
+        }
+
+        ul.project-list li a.edit-link:hover {
+            background-color: #2563eb;
+            color: #fff;
+        }
+
+        ul.project-list li.no-projects {
+            color: #a0a0a0;
+            font-style: italic;
+            padding: 1rem;
+        }
+    </style>
+
+    <h2>Your Projects</h2>
+    <a href="{% url 'create_project' %}" class="new-project-link">+ New Project</a>
+    <ul class="project-list">
+        {% for project in projects %}
+            <li>
+                <a class="repo-link" target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a>
+                <a class="edit-link" href="{% url 'edit_project' project.id %}">Edit</a>
+            </li>
+        {% empty %}
+            <li class="no-projects">No projects yet.</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

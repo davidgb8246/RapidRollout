@@ -1,7 +1,145 @@
-{% extends './base.html' %}
-{% block title %}
-  Dashboard
-{% endblock %}
+{% extends "./base.html" %}
+
+{% block title %}Dashboard - RapidRollout{% endblock %}
+
 {% block content %}
-  <h2>Welcome {{ user.username }}</h2>
+<style>
+    body {
+        background-color: #1e1e1e;
+        color: #f8f9fa;
+    }
+
+    .card-custom {
+        background-color: #2c2f33;
+        border: none;
+        color: #f8f9fa;
+    }
+
+    .form-control-dark {
+        background-color: #3a3b3c;
+        color: #f1f1f1;
+        border: 1px solid #444;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .form-control-dark:focus {
+        background-color: #27292a;
+        color: #fff;
+        border-color: #5c7cfa;
+        box-shadow: 0 0 0 0.2rem rgba(92, 124, 250, 0.25);
+    }
+
+    .form-control-dark::placeholder {
+        color: #a0a0a0;
+    }
+
+    .btn-custom {
+        background-color: #3b82f6;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .btn-custom:hover {
+        background-color: #2563eb;
+    }
+
+    .list-group-item {
+        background-color: #3a3b3c;
+        color: #f8f9fa;
+        border-color: #444;
+    }
+</style>
+
+<div class="container my-5" style="max-width: 700px;">
+    <div class="card card-custom shadow-sm mb-4">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">Welcome, {{ user.get_full_name|default:user.username }}</h3>
+
+            <h5 class="mb-3">User Information</h5>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+                <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                <li class="list-group-item"><strong>Last login:</strong> {{ user.last_login }}</li>
+                {% if profile %}
+                    <li class="list-group-item"><strong>Profile ID:</strong> {{ profile.id }}</li>
+                    <li class="list-group-item"><strong>System Name:</strong> {{ profile.get_sys_username }}</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card card-custom shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Edit Email</h5>
+
+            {% if email_messages %}
+                {% for message in email_messages %}
+                    {% if 'success' in message.tags %}
+                        <div class="alert alert-success mt-2">{{ message }}</div>
+                    {% elif 'error' in message.tags %}
+                        <div class="alert alert-danger mt-2">{{ message }}</div>
+                    {% else %}
+                        <div class="alert alert-info mt-2">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="update_email" value="1">
+                {% for field in email_form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-custom mt-2">Update Email</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card card-custom shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Change Password</h5>
+
+            {% if password_messages %}
+                {% for message in password_messages %}
+                    {% if 'success' in message.tags %}
+                        <div class="alert alert-success mt-2">{{ message }}</div>
+                    {% elif 'error' in message.tags %}
+                        <div class="alert alert-danger mt-2">{{ message }}</div>
+                    {% else %}
+                        <div class="alert alert-info mt-2">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="update_password" value="1">
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        <input
+                            type="{{ field.field.widget.input_type }}"
+                            name="{{ field.name }}"
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:'' }}"
+                            class="form-control form-control-dark {% if field.errors %}is-invalid{% endif %}"
+                        >
+                        {% if field.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ field.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-custom mt-3">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

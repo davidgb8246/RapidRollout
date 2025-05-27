@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from rapidrollout import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,5 +27,5 @@ urlpatterns = [
     path('management/', include('management.urls')),
     path('accounts/', include('django.contrib.auth.urls'), name="accounts"),
 
-    path('', RedirectView.as_view(url='/management/', permanent=True)),
+    path('', views.root_redirect, name='root-redirect'),
 ]

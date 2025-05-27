@@ -1,85 +1,547 @@
 {% extends '../base.html' %}
 
 {% block title %}
-  Edit Project
+  Edit Project - RapidRollout
 {% endblock %}
 
 {% block content %}
-  <h2>Edit Project: <a target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a></h2>
+  <style>
+    table.dark-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e1f22;
+      color: #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    table.dark-table thead {
+      background-color: #32353a;
+    }
+    
+    table.dark-table th {
+      font-weight: 600;
+      color: #f0f0f0;
+      border-bottom: 2px solid #444;
+      padding: 0.6em 0.8em;
+      text-align: left;
+    }
+    
+    table.dark-table td {
+      border-top: 1px solid #333;
+      padding: 0.5em 0.8em;
+      vertical-align: top;
+    }
+    
+    table.dark-table tbody tr:nth-child(odd) {
+      background-color: #25272a;
+    }
+    
+    table.dark-table tbody tr:nth-child(even) {
+      background-color: #2a2c2f;
+    }
+    
+    table.dark-table tbody tr:hover {
+      background-color: #3a3d42;
+    }
+    
+    label.form-check-label {
+      color: #ccc;
+      font-size: 0.9rem;
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .dark-table input,
+    .dark-table textarea,
+    .dark-table select {
+      background-color: #202124;
+      color: #f5f5f5;
+      border: 1px solid #555;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    
+    .dark-table input:focus,
+    .dark-table textarea:focus,
+    .dark-table select:focus {
+      outline: none;
+      border-color: #4d90fe;
+      box-shadow: 0 0 5px rgba(77, 144, 254, 0.5);
+    }
+    
+    .dark-project {
+      background-color: #121212;
+      color: #ddd;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 2rem 2rem;
+      border-radius: 8px;
+    }
+    
+    .dark-project-title {
+      font-weight: 700;
+      color: #f0f0f0;
+      margin-bottom: 1rem;
+    }
+    
+    .dark-project-subtitle {
+      color: #ccc;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+    }
+    
+    .dark-project-link,
+    .dark-project-link-btn {
+      color: #7aa7ff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .dark-project-link:hover,
+    .dark-project-link-btn:hover {
+      text-decoration: underline;
+    }
+    
+    .dark-project-btn {
+      background-color: #ffb300;
+      border: none;
+      color: #222;
+      padding: 0.5rem 1.25rem;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .dark-project-btn:hover {
+      background-color: #e6a700;
+    }
+    
+    .dark-project-alert {
+      padding: 0.65rem 1rem;
+      border-radius: 5px;
+      font-weight: 600;
+      width: fit-content;
+      font-size: 0.95rem;
+    }
+    
+    .dark-project-alert.success {
+      background-color: #2a4d2a;
+      color: #a6d785;
+    }
+    
+    .dark-project-alert.error {
+      background-color: #5c1f1f;
+      color: #f08b8b;
+    }
+    
+    .dark-project-separator {
+      color: #555;
+      margin: 0 0.5rem;
+      user-select: none;
+    }
+    
+    .dark-project-divider {
+      border-color: #333;
+    }
+    
+    .dark-project-label {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: #bbb;
+      font-weight: 600;
+    }
+    
+    .dark-project-input,
+    .dark-project-textarea {
+      background-color: #222;
+      color: #eee;
+      border: 1px solid #444;
+      border-radius: 5px;
+      padding: 0.4rem 0.6rem;
+      width: 100%;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .dark-project-input:focus,
+    .dark-project-textarea:focus {
+      outline: none;
+      border-color: #7aa7ff;
+      box-shadow: 0 0 8px #7aa7ff88;
+    }
+    
+    .dark-project-helptext {
+      font-size: 0.85rem;
+      color: #777;
+      display: block;
+      margin-top: 0.3rem;
+    }
+    
+    .dark-project-list {
+      padding-left: 0;
+      list-style: none;
+    }
+    
+    .dark-project-list-item {
+      border: 1px solid #333;
+      padding: 1rem 1.2rem;
+      border-radius: 6px;
+      background-color: #1b1b1b;
+      margin-bottom: 1rem;
+    }
+    
+    .dark-project-status-messages {
+      background-color: #121212;
+      border: 1px solid #444;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      color: #ccc;
+      margin-top: 0.8rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    .dark-project-status-messages > p {
+      margin-bottom: 0;
+    }
+    
+    .dark-project-form {
+      display: inline;
+    }
+    
+    .flex {
+      display: flex;
+      align-items: center;
+    }
+    
+    .gap-4 {
+      gap: 1rem;
+    }
+    
+    .space-y-2 > * + * {
+      margin-top: 0.5rem;
+    }
+    
+    .mb-3 {
+      margin-bottom: 1rem;
+    }
+    
+    .mb-4 {
+      margin-bottom: 1.5rem;
+    }
+    
+    .dark-project-btn.small {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      background-color: #444c56;
+      color: #ddd;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .dark-project-btn.small:hover {
+      background-color: #586270;
+      text-decoration: none;
+    }
+    
+    .dark-project-btn.small.danger {
+      background-color: #aa2e2e;
+      color: #fff;
+    }
+    
+    .dark-project-btn.small.danger:hover {
+      background-color: #c23737;
+    }
+    
+    .dark-project-card {
+      background-color: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark-project-card h4 {
+      margin: 0 0 0.6rem 0;
+      color: #7aa7ff;
+      font-size: 1.05rem;
+    }
+    
+    .dark-project-card p {
+      margin: 0.25rem 0;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    
+    .dark-project-card a.dark-project-link {
+      display: inline-block;
+      margin-top: 4px;
+      font-weight: 500;
+      color: #7aa7ff;
+    }
+    
+    .dark-project-card a.dark-project-link-btn {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.9rem;
+      background-color: #333;
+      border: 1px solid #555;
+      color: #ccc;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+    
+    .dark-project-card a.dark-project-link-btn:hover {
+      background-color: #444;
+      color: #fff;
+    }
+    
+    .dark-project-card-status {
+      font-weight: 500;
+      color: #ccc;
+      margin-top: 0.2rem;
+    }
+    
+    .dark-project-card-timestamp {
+      font-size: 0.85rem;
+      color: #777;
+    }
+    
+    .custom-project-form {
+      margin: 1.5rem auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ddd;
+      background-color: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+    }
+    
+    .custom-project-form h3 {
+      color: #7aa7ff;
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: 1.2rem;
+      border-bottom: 2px solid #7aa7ff;
+      padding-bottom: 0.4rem;
+    }
+    
+    .custom-project-form label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #ccc;
+    }
+    
+    .custom-project-form input[type='url'],
+    .custom-project-form textarea {
+      width: 100%;
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #eee;
+      padding: 0.6rem 0.9rem;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      resize: vertical;
+    }
+    
+    .custom-project-form input[type='url']:focus,
+    .custom-project-form textarea:focus {
+      outline: none;
+      border-color: #7aa7ff;
+      box-shadow: 0 0 10px #7aa7ffaa;
+    }
+    
+    .custom-project-form .helptext {
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 0.3rem;
+      display: block;
+    }
+    
+    .custom-project-form .mt-3 {
+      margin-top: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    
+    .custom-project-form button.btn-primary {
+      background-color: #7aa7ff;
+      border: none;
+      color: #121212;
+      font-weight: 700;
+      padding: 0.65rem 1.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    
+    .custom-project-form button.btn-primary:hover {
+      background-color: #5c87d9;
+    }
+    
+    .custom-project-form a.btn-link,
+    .custom-project-form button.btn-link {
+      font-size: 1rem;
+      color: #7aa7ff;
+      text-decoration: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    
+    .custom-project-form a.btn-link:hover,
+    .custom-project-form button.btn-link:hover {
+      background-color: #333;
+      color: #a8bfff;
+      text-decoration: none;
+    }
+    
+    .custom-project-form a.btn-link.text-danger,
+    .custom-project-form button.btn-link.text-danger {
+      color: #f06262;
+      font-weight: 600;
+    }
+    
+    .custom-project-form a.btn-link.text-danger:hover,
+    .custom-project-form button.btn-link.text-danger:hover {
+      background-color: #a83232;
+      color: #fff;
+    }
+    
+    .custom-project-form a.ms-3,
+    .custom-project-form button.ms-3 {
+      margin-left: 1rem;
+    }
+    
+    .custom-project-form a.btn-link,
+    .custom-project-form button.btn-link {
+      text-decoration: none;
+      background-color: #2c2f36;
+      padding: 0.35rem 0.75rem;
+      border-radius: 5px;
+      color: #7aa7ff;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .custom-project-form a.btn-link:hover,
+    .custom-project-form button.btn-link:hover {
+      text-decoration: none;
+      background-color: #4451a3;
+      color: #d0dbff;
+    }
+  </style>
 
-  {% if is_docker_compose_project %}
-    <form method="post" style="margin-top: 1em;">
+  <div class="dark-project">
+    <h2 class="dark-project-title mb-4">
+      Edit Project:
+      <a target="_blank" href="{{ project.repository_url }}" class="dark-project-link">{{ project.repository_url }}</a>
+    </h2>
+
+    {% if is_docker_compose_project %}
+      <div class="flex gap-4 mb-4">
+        <form method="post" class="dark-project-form">
+          {% csrf_token %}
+          <button type="submit" name="reboot_project" class="dark-project-btn" style="min-width: 12vw;">🔄 Reboot Project</button>
+        </form>
+
+        <form method="post" class="dark-project-form">
+          {% csrf_token %}
+          <button type="submit" name="rebuild_project" class="dark-project-btn" style="min-width: 12vw;">🔧 Rebuild Project</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <form method="post" class="dark-project-form mb-4">
       {% csrf_token %}
-      <button type="submit" name="reboot_project" style="background-color: orange; padding: 0.5em;">Reboot Project</button>
+      <button type="submit" name="save_private_files" class="dark-project-btn" style="min-width: 12vw;">💾 Save Private Files</button>
     </form>
 
-    <form method="post" style="margin-top: 1em;">
-      {% csrf_token %}
-      <button type="submit" name="rebuild_project" style="background-color: orange; padding: 0.5em;">Rebuild Project</button>
-    </form>
-  {% endif %}
+    <div class="space-y-2">
+      {% if saved_successfully %}
+        <p class="dark-project-alert success">✅ Changes saved successfully!</p>
+      {% endif %}
 
-  <form method="post" style="margin-top: 1em;">
-    {% csrf_token %}
-    <button type="submit" name="save_private_files" style="background-color: orange; padding: 0.5em;">Save Private Files</button>
-  </form>
+      {% if reboot_successfully == True %}
+        <p class="dark-project-alert success">✅ Project rebooted successfully!</p>
+      {% elif reboot_successfully == False %}
+        <p class="dark-project-alert error">❌ Failed to reboot project.</p>
+      {% endif %}
 
-  {% if saved_successfully %}
-    <p style="color: green;">Changes saved successfully!</p>
-  {% endif %}
+      {% if rebuild_successfully == True %}
+        <p class="dark-project-alert success">✅ Project rebuilt successfully!</p>
+      {% elif rebuild_successfully == False %}
+        <p class="dark-project-alert error">❌ Failed to rebuild project.</p>
+      {% endif %}
 
-  {% if reboot_successfully == True %}
-    <p style="color: green;">Project rebooted successfully!</p>
-  {% elif reboot_successfully == False %}
-    <p style="color: red;">Failed to reboot project.</p>
-  {% endif %}
+      {% if private_files_saved_successfully == True %}
+        <p class="dark-project-alert success">✅ Private files saved successfully!</p>
+      {% elif private_files_saved_successfully == False %}
+        <p class="dark-project-alert error">❌ Failed to save private files.</p>
+      {% endif %}
+    </div>
 
-  {% if rebuild_successfully == True %}
-    <p style="color: green;">Project rebuilt successfully!</p>
-  {% elif rebuild_successfully == False %}
-    <p style="color: red;">Failed to rebuild project.</p>
-  {% endif %}
+    <hr class="dark-project-divider my-4" />
 
-  {% if private_files_saved_successfully == True %}
-    <p style="color: green;">Project private files successfully saved!</p>
-  {% elif private_files_saved_successfully == False %}
-    <p style="color: red;">Failed to save project private files.</p>
-  {% endif %}
+    <h3 class="dark-project-subtitle">🔐 Secret</h3>
+    <div class="flex gap-3 mb-3">
+      {% if project.has_secret %}
+        <a href="{% url 'reset_project_secret' project.id %}" class="dark-project-btn small">Reset Secret</a>
+        <a href="{% url 'delete_project_secret' project.id %}" class="dark-project-btn small danger">Delete Secret</a>
+      {% else %}
+        <a href="{% url 'reset_project_secret' project.id %}" class="dark-project-btn small">Create Secret</a>
+      {% endif %}
+    </div>
 
-  <h3>Secret</h3>
-  {% if project.has_secret %}
-    <a href="{% url 'reset_project_secret' project.id %}">Reset Secret</a>
-    - <a href="{% url 'delete_project_secret' project.id %}">Delete Secret</a>
-  {% else %}
-    - <a href="{% url 'reset_project_secret' project.id %}">Create Secret</a>
-  {% endif %}
+    <hr class="dark-project-divider my-4" />
 
-  <hr />
-  <h3>SSH Key</h3>
-  {% if project.has_ssh_key %}
-    <p>
-      <strong>Status:</strong> SSH key is already stored.
-    </p>
-  {% else %}
-    <p>
-      <strong>Status:</strong> No SSH key saved yet.
-    </p>
-  {% endif %}
+    <h3 class="dark-project-subtitle">🔑 SSH Key</h3>
+    <div class="dark-project-status-messages">
+      {% if project.has_ssh_key %}
+        <p>
+          <strong>Status:</strong> ✅ SSH key is already stored.
+        </p>
+      {% else %}
+        <p>
+          <strong>Status:</strong> ⚠️ No SSH key saved yet.
+        </p>
+      {% endif %}
+    </div>
+  </div>
 
-  <hr />
-  <h3>Recent Deployments</h3>
-  <ul>
+  <hr class="my-4" />
+
+  <h3 class="dark-project-subtitle">🚀 Recent Deployments</h3>
+  <div class="dark-project-card-container">
     {% for deployment in deployments_data %}
-      <li>
-        <strong>Commit ID:</strong> {{ deployment.commit_id }} <br />
-        <strong>Commit URL:</strong> <a href="{{ deployment.commit_url }}" target="_blank">View Commit</a> <br />
-        <strong>Status:</strong> {{ deployment.status }} <br />
-        <strong>Timestamp:</strong> {{ deployment.created_at_formatted }} <br />
+      <div class="dark-project-card mb-4">
+        <h4>Deployment {{ forloop.counter }}</h4>
+        <p>
+          <strong>Commit ID:</strong> {{ deployment.commit_id }}
+        </p>
+        <p class="dark-project-card-status">
+          <strong>Status:</strong> {{ deployment.status }}
+        </p>
+        <p class="dark-project-card-timestamp">
+          <strong>Timestamp:</strong> {{ deployment.created_at_formatted }}
+        </p>
+        <a href="{{ deployment.commit_url }}" target="_blank" class="dark-project-link">🔗 View Commit</a><br />
+        <a href="#deployment-{{ deployment.id }}" class="dark-project-link-btn" onclick="document.getElementById('deployment-{{ deployment.id }}').style.display = 'block';">🪵 View Status Messages</a>
 
-        <a href="#deployment-{{ deployment.id }}" onclick="document.getElementById('deployment-{{ deployment.id }}').style.display = 'block';">View Status Messages</a>
-
-        <!-- Detailed View of Status Messages -->
-        <div id="deployment-{{ deployment.id }}" style="display: none;">
+        <div id="deployment-{{ deployment.id }}" class="dark-project-status-messages" style="display: none;">
           <h4>Status Messages:</h4>
           {% if deployment.status_messages %}
             <ul>
@@ -91,12 +553,13 @@
             <p>No status messages for this deployment.</p>
           {% endif %}
         </div>
-      </li>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
 
-  <hr />
-  <form method="post">
+  <hr class="my-4" />
+
+  <form method="post" class="custom-project-form">
     {% csrf_token %}
 
     <h3>Project Info</h3>
@@ -104,7 +567,7 @@
 
     <h3>Private Files</h3>
     {{ formset.management_form }}
-    <table>
+    <table class="dark-table">
       <thead>
         <tr>
           <th>Filename</th>
@@ -123,15 +586,50 @@
             <td>{{ file_form.plain_content }}</td>
             <td>{{ file_form.fileperms }}</td>
             <td>{{ file_form.file_type }}</td>
-            <td>{{ file_form.DELETE }} Delete</td>
+            <td>
+              <label class="form-check-label">{{ file_form.DELETE }}</label>
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <br />
-    <button type="submit">Save Changes</button>
-    <a href="{% url 'project_list' %}">Cancel</a>
-    - <a href="{% url 'delete_project' project.id %}">Delete Project</a>
+    <div class="mt-3">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{% url 'project_list' %}" class="btn btn-link ms-3">Cancel</a>
+      <button type="button" class="btn btn-link text-danger ms-3" data-bs-toggle="modal" data-bs-target="#deleteProjectModal" data-project-name="{{ project.name }}" data-delete-url="{% url 'delete_project' project.id %}">Delete Project</button>
+    </div>
+
+    <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="deleteProjectModalLabel">Confirm Project Deletion</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete the project <strong id="modalProjectName"></strong>?
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a id="confirmProjectDeleteBtn" href="#" class="btn btn-danger">Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </form>
+
+  <script>
+    const deleteProjectModal = document.getElementById('deleteProjectModal');
+    const confirmProjectBtn = document.getElementById('confirmProjectDeleteBtn');
+    const modalProjectName = document.getElementById('modalProjectName');
+
+    deleteProjectModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;
+      const projectName = button.getAttribute('data-project-name');
+      const deleteUrl = button.getAttribute('data-delete-url');
+      modalProjectName.textContent = projectName;
+      confirmProjectBtn.href = deleteUrl;
+    });
+  </script>
 {% endblock %}

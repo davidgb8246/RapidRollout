@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from django import forms
 from management.models import *
 
@@ -9,11 +10,69 @@ class UserCreateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'is_staff', 'is_active']
+        fields = ['username', 'email', 'password', 'is_superuser', 'is_active']
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
+        user.is_staff = user.is_superuser
+
+        if commit:
+            user.save()
+        return user
+
+
+class EditUserForm(forms.ModelForm):
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-input'}),
+        help_text="Leave blank to keep the current password."
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'is_superuser', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-input', 'readonly': 'readonly'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input'}),
+        }
+
+    def save(self, commit=True):
+        if self.instance.pk:
+            original_password = User.objects.values_list('password', flat=True).get(pk=self.instance.pk)
+        else:
+            original_password = None
+
+        user = super().save(commit=False)
+
+        user.username = self.instance.username
+        user.is_staff = user.is_superuser
+
+        new_pw = self.cleaned_data.get('password')
+        if new_pw and new_pw.strip():
+            user.password = make_password(new_pw)
+        else:
+            user.password = original_password or user.password
+
+        if commit:
+            user.save()
+        return user
+
+
+class EmailUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email']
+        widgets = {
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control form-control-dark',
+                'placeholder': 'Enter new email',
+            }),
+        }
+
+    def save(self, commit=True):
+        user = self.instance
+        user.email = self.cleaned_data['email']
         if commit:
             user.save()
         return user
@@ -44,7 +103,8 @@ class ProjectEditForm(forms.ModelForm):
     ssh_private_key = forms.CharField(
         widget=forms.Textarea,
         required=False,
-        help_text="Paste your private SSH key (leave blank to keep existing)"
+        help_text="Paste your private SSH key (leave blank to keep existing)",
+        label="SSH Private key"
     )
 
     class Meta:

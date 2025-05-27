@@ -1,12 +1,16 @@
+from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Case, When, Value, IntegerField
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import modelformset_factory
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 
 from api.utils import check_docker_compose_environment, get_user_home
-from management.forms import UserCreateForm, ProjectEditForm, ProjectForm, PrivateFileForm
+from management.forms import EditUserForm, EmailUpdateForm, UserCreateForm, ProjectEditForm, ProjectForm, PrivateFileForm
 from management.models import Project, UserProfile, PrivateFile
 from management.serializers import DeploymentSerializer
 
@@ -14,13 +18,52 @@ from management.serializers import DeploymentSerializer
 
 @login_required
 def dashboard(request):
-    return render(request, 'management/dashboard.html')
+    user = request.user
+    profile = getattr(user, 'profile', None)
 
+    form = PasswordChangeForm(user=user)
+    email_form = EmailUpdateForm(instance=user)
+
+    if request.method == 'POST':
+        if 'update_password' in request.POST:
+            form = PasswordChangeForm(user=user, data=request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Your password has been updated successfully.", extra_tags='password')
+                return redirect('dashboard')
+            else:
+                messages.error(request, "There was an error changing the password.", extra_tags='password')
+
+        elif 'update_email' in request.POST:
+            email_form = EmailUpdateForm(request.POST, instance=user)
+            if email_form.is_valid():
+                email_form.save()
+                messages.success(request, "Your email was updated successfully.", extra_tags='email')
+                return redirect('dashboard')
+            else:
+                messages.error(request, "There was an error updating your email.", extra_tags='email')
+
+    all_messages = messages.get_messages(request)
+    email_messages = [m for m in all_messages if 'email' in m.extra_tags]
+    password_messages = [m for m in all_messages if 'password' in m.extra_tags]
+
+    print(email_messages)
+    print(password_messages)
+
+    return render(request, 'management/dashboard.html', {
+        'form': form,
+        'email_form': email_form,
+        'user': user,
+        'profile': profile,
+        'email_messages': email_messages,
+        'password_messages': password_messages,
+    })
 
 @user_passes_test(lambda u: u.is_superuser)
 def user_list(request):
     users = User.objects.all()
-    return render(request, 'management/user_list.html', {'users': users})
+    return render(request, 'management/users/user_list.html', {'users': users})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -32,7 +75,23 @@ def create_user(request):
             return redirect('user_list')
     else:
         form = UserCreateForm()
-    return render(request, 'management/create_user.html', {'form': form})
+    return render(request, 'management/users/create_user.html', {'form': form})
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_user(request, profile_id):
+    profile = get_object_or_404(UserProfile, id=profile_id)
+    user = profile.user
+
+    if request.method == 'POST':
+        form = EditUserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = EditUserForm(instance=user)
+
+    return render(request, 'management/users/edit_user.html', {'form': form, 'user_obj': user})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -162,7 +221,7 @@ def reset_project_secret(request, project_id):
 def delete_project_secret(request, project_id):
     project = get_object_or_404(Project, id=project_id, profile=request.user.profile)
     project.delete_secret()
-    return redirect('project_list')
+    return redirect('edit_project', project_id=project.id)
 
 @login_required
 def delete_project(request, project_id):
