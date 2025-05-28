@@ -48,9 +48,6 @@ def dashboard(request):
     email_messages = [m for m in all_messages if 'email' in m.extra_tags]
     password_messages = [m for m in all_messages if 'password' in m.extra_tags]
 
-    print(email_messages)
-    print(password_messages)
-
     return render(request, 'management/dashboard.html', {
         'form': form,
         'email_form': email_form,
@@ -59,6 +56,7 @@ def dashboard(request):
         'email_messages': email_messages,
         'password_messages': password_messages,
     })
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def user_list(request):
@@ -106,6 +104,7 @@ def project_list(request):
     profile = request.user.profile
     projects = profile.projects.all()
     return render(request, 'management/projects/project_list.html', {'projects': projects})
+
 
 @login_required
 def create_project(request):
@@ -203,6 +202,7 @@ def edit_project(request, project_id):
         'formset': formset,
         'project': project,
         'deployments_data': deployments_data,
+        'action_executed': reboot_successfully or rebuild_successfully or private_files_saved_successfully,
         'saved_successfully': saved_successfully,
         'reboot_successfully': reboot_successfully,
         'rebuild_successfully': rebuild_successfully,
@@ -215,13 +215,16 @@ def edit_project(request, project_id):
 def reset_project_secret(request, project_id):
     project = get_object_or_404(Project, id=project_id, profile=request.user.profile)
     secret = project.reset_secret()
-    return render(request, 'management/projects/show_secret.html', {'secret': secret})
+    next_url = request.GET.get('next') or request.POST.get('next')
+    return render(request, 'management/projects/show_secret.html', {'secret': secret, 'next': next_url, 'nextTxt': 'Back to project details'})
+
 
 @login_required
 def delete_project_secret(request, project_id):
     project = get_object_or_404(Project, id=project_id, profile=request.user.profile)
     project.delete_secret()
     return redirect('edit_project', project_id=project.id)
+
 
 @login_required
 def delete_project(request, project_id):

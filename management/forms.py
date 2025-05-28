@@ -6,11 +6,26 @@ from management.models import *
 
 
 class UserCreateForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
+    )
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'is_superuser', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
+            'email': forms.EmailInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip()
+
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("An user with that email already exists.")
+
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -25,7 +40,7 @@ class UserCreateForm(forms.ModelForm):
 class EditUserForm(forms.ModelForm):
     password = forms.CharField(
         required=False,
-        widget=forms.PasswordInput(attrs={'class': 'form-input'}),
+        widget=forms.PasswordInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         help_text="Leave blank to keep the current password."
     )
 
@@ -33,9 +48,21 @@ class EditUserForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'password', 'is_superuser', 'is_active']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-input', 'readonly': 'readonly'}),
-            'email': forms.EmailInput(attrs={'class': 'form-input'}),
+            'username': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out', 'readonly': 'readonly'}),
+            'email': forms.EmailInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         }
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip()
+
+        qs = User.objects.filter(email=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise forms.ValidationError("An user with that email already exists.")
+
+        return email
 
     def save(self, commit=True):
         if self.instance.pk:
@@ -65,10 +92,22 @@ class EmailUpdateForm(forms.ModelForm):
         fields = ['email']
         widgets = {
             'email': forms.EmailInput(attrs={
-                'class': 'form-control form-control-dark',
+                'class': 'w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out',
                 'placeholder': 'Enter new email',
             }),
         }
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip()
+
+        qs = User.objects.filter(email=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise forms.ValidationError("An user with that email already exists.")
+
+        return email
 
     def save(self, commit=True):
         user = self.instance
@@ -80,7 +119,7 @@ class EmailUpdateForm(forms.ModelForm):
 
 class ProjectForm(forms.ModelForm):
     ssh_private_key = forms.CharField(
-        widget=forms.Textarea,
+        widget=forms.Textarea(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         required=False,
         help_text="Paste your private SSH key (leave blank to keep existing)"
     )
@@ -88,6 +127,18 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['repository_url', 'ssh_private_key']
+        widgets = {
+            'repository_url': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
+        }
+
+    def clean_repository_url(self):
+        url = self.cleaned_data['repository_url'].strip()
+        url = url.rstrip('/')
+
+        if Project.objects.filter(repository_url=url).exists():
+            raise forms.ValidationError("A project with this repository URL already exists.")
+
+        return url
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -101,7 +152,7 @@ class ProjectForm(forms.ModelForm):
 
 class ProjectEditForm(forms.ModelForm):
     ssh_private_key = forms.CharField(
-        widget=forms.Textarea,
+        widget=forms.Textarea(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         required=False,
         help_text="Paste your private SSH key (leave blank to keep existing)",
         label="SSH Private key"
@@ -110,6 +161,22 @@ class ProjectEditForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['repository_url', 'ssh_private_key']
+        widgets = {
+            'repository_url': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
+        }
+
+    def clean_repository_url(self):
+        url = self.cleaned_data['repository_url'].strip()
+        url = url.rstrip('/')
+
+        qs = Project.objects.filter(repository_url=url)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise forms.ValidationError("A project with this repository URL already exists.")
+
+        return url
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -123,13 +190,14 @@ class ProjectEditForm(forms.ModelForm):
 
 class PrivateFileForm(forms.ModelForm):
     plain_content = forms.CharField(
-        widget=forms.Textarea(attrs={'placeholder': 'Enter file content here...'}),
+        widget=forms.Textarea(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out', 'placeholder': 'Enter file content here...', 'style': 'height: 20dvh;'}),
         required=False,
         label="Content"
     )
 
     file_type = forms.ChoiceField(
         choices=PrivateFile.FileType.choices,
+        widget=forms.Select(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         label="File Type",
         required=True,
     )
@@ -138,9 +206,9 @@ class PrivateFileForm(forms.ModelForm):
         model = PrivateFile
         fields = ['filename', 'filepath', 'plain_content', 'fileperms', 'file_type']
         widgets = {
-            'filename': forms.TextInput(attrs={'placeholder': 'e.g., config.json'}),
-            'filepath': forms.TextInput(attrs={'placeholder': 'e.g., /app/config/'}),
-            'fileperms': forms.TextInput(attrs={'placeholder': 'e.g., 600'}),
+            'filename': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out', 'placeholder': 'e.g., config.json'}),
+            'filepath': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out', 'placeholder': 'e.g., /app/config/'}),
+            'fileperms': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out', 'placeholder': 'e.g., 600'}),
         }
 
     def __init__(self, *args, **kwargs):

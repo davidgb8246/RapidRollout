@@ -3,143 +3,120 @@
 {% block title %}Dashboard - RapidRollout{% endblock %}
 
 {% block content %}
-<style>
-    body {
-        background-color: #1e1e1e;
-        color: #f8f9fa;
-    }
-
-    .card-custom {
-        background-color: #2c2f33;
-        border: none;
-        color: #f8f9fa;
-    }
-
-    .form-control-dark {
-        background-color: #3a3b3c;
-        color: #f1f1f1;
-        border: 1px solid #444;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .form-control-dark:focus {
-        background-color: #27292a;
-        color: #fff;
-        border-color: #5c7cfa;
-        box-shadow: 0 0 0 0.2rem rgba(92, 124, 250, 0.25);
-    }
-
-    .form-control-dark::placeholder {
-        color: #a0a0a0;
-    }
-
-    .btn-custom {
-        background-color: #3b82f6;
-        color: #fff;
-        font-weight: 500;
-    }
-
-    .btn-custom:hover {
-        background-color: #2563eb;
-    }
-
-    .list-group-item {
-        background-color: #3a3b3c;
-        color: #f8f9fa;
-        border-color: #444;
-    }
-</style>
-
-<div class="container my-5" style="max-width: 700px;">
-    <div class="card card-custom shadow-sm mb-4">
-        <div class="card-body">
-            <h3 class="card-title text-center mb-4">Welcome, {{ user.get_full_name|default:user.username }}</h3>
-
-            <h5 class="mb-3">User Information</h5>
-            <ul class="list-group">
-                <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
-                <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
-                <li class="list-group-item"><strong>Last login:</strong> {{ user.last_login }}</li>
+<section class="py-4 md:py-15 md:py-0 flex-grow h-full w-full flex flex-col gap-4 md:gap-15 items-center">
+    <div class="w-full md:w-[70dvw] lg:w-[45dvw] p-6 flex flex-col gap-6 bg-[#2c2f33] rounded-[8px] shadow-md">
+        <h1 class="w-full text-center inter-semibold text-[36px] leading-snug">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+        
+        <div class="flex flex-col gap-4">
+            <h2 class="inter-semibold text-[28px] leading-snug">User Information</h2>
+            <ul class="flex flex-col rounded-[8px] text-[#fff] text-[20px] bg-[#3a3b3c] overflow-hidden">
+                <li class="w-full px-4 py-3 border border-[#444] flex gap-x-[0.375rem] flex-wrap">
+                    <span class="inter-bold">Username:</span> {{ user.username }}
+                </li>
+                <li class="w-full px-4 py-3 border border-[#444] flex gap-x-[0.375rem] flex-wrap">
+                    <span class="inter-bold">Email:</span> {{ user.email }}
+                </li>
+                <li class="w-full px-4 py-3 border border-[#444] flex gap-x-[0.375rem] flex-wrap">
+                    <span class="inter-bold">Last login:</span> {{ user.last_login }}
+                </li>
                 {% if profile %}
-                    <li class="list-group-item"><strong>Profile ID:</strong> {{ profile.id }}</li>
-                    <li class="list-group-item"><strong>System Name:</strong> {{ profile.get_sys_username }}</li>
+                    <li class="w-full px-4 py-3 border border-[#444] flex gap-x-[0.375rem] flex-wrap">
+                        <span class="inter-bold">Profile ID:</span> {{ profile.id }}
+                    </li>
+                    <li class="w-full px-4 py-3 border border-[#444] flex gap-x-[0.375rem] flex-wrap">
+                        <span class="inter-bold">System Name:</span> {{ profile.get_sys_username }}
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 
-    <div class="card card-custom shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Edit Email</h5>
+    <div class="w-full md:w-[70dvw] lg:w-[45dvw] p-6 flex flex-col gap-6 bg-[#2c2f33] rounded-[8px] shadow-md relative">
+        <div id="updateEmailForm" class="-translate-y-[1.8dvh] md:-translate-y-[6dvh] lg:-translate-y-[4.5dvh] absolute h-10 w-10 top-0 left-0"></div>
+        <h2 class="inter-semibold text-[28px] leading-snug">Edit Email</h2>
 
-            {% if email_messages %}
-                {% for message in email_messages %}
-                    {% if 'success' in message.tags %}
-                        <div class="alert alert-success mt-2">{{ message }}</div>
-                    {% elif 'error' in message.tags %}
-                        <div class="alert alert-danger mt-2">{{ message }}</div>
-                    {% else %}
-                        <div class="alert alert-info mt-2">{{ message }}</div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <input type="hidden" name="update_email" value="1">
-                {% for field in email_form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
-                        {% endif %}
+        {% if email_messages %}
+            {% for message in email_messages %}
+                {% if 'success' in message.tags %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#a3cfbb] bg-[#d1e7dd] text-[20px] text-[#0a3622]">
+                        {{ message }}
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-custom mt-2">Update Email</button>
-            </form>
-        </div>
+                {% elif 'error' in message.tags %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#f1aeb5] bg-[#f8d7da] text-[20px] text-[#58151c]">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#9eeaf9] bg-[#cff4fc] text-[20px] text-[#055160]">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form data-name="updateEmailForm" class="w-full flex flex-col gap-6" method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="update_email" value="1">
+            {% for field in email_form %}
+                <div class="flex flex-col gap-2">
+                    <label for="{{ field.id_for_label }}" class="text-[20px]">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="w-full text-[20px] text-[#dc3545]">
+                            {{ field.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button class="cursor-pointer w-fit px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" type="submit">Update Email</button>
+        </form>
     </div>
 
-    <div class="card card-custom shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Change Password</h5>
+    <div class="w-full md:w-[70dvw] lg:w-[45dvw] p-6 flex flex-col gap-6 bg-[#2c2f33] rounded-[8px] shadow-md relative">
+        <div id="updatePasswordForm" class="-translate-y-[1.8dvh] md:-translate-y-[6dvh] lg:-translate-y-[4.5dvh] absolute h-10 w-10 top-0 left-0"></div>
+        <h2 class="inter-semibold text-[28px] leading-snug">Change Password</h2>
 
-            {% if password_messages %}
-                {% for message in password_messages %}
-                    {% if 'success' in message.tags %}
-                        <div class="alert alert-success mt-2">{{ message }}</div>
-                    {% elif 'error' in message.tags %}
-                        <div class="alert alert-danger mt-2">{{ message }}</div>
-                    {% else %}
-                        <div class="alert alert-info mt-2">{{ message }}</div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <input type="hidden" name="update_password" value="1">
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        <input
-                            type="{{ field.field.widget.input_type }}"
-                            name="{{ field.name }}"
-                            id="{{ field.id_for_label }}"
-                            value="{{ field.value|default_if_none:'' }}"
-                            class="form-control form-control-dark {% if field.errors %}is-invalid{% endif %}"
-                        >
-                        {% if field.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ field.errors.0 }}
-                            </div>
-                        {% endif %}
+        {% if password_messages %}
+            {% for message in password_messages %}
+                {% if 'success' in message.tags %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#a3cfbb] bg-[#d1e7dd] text-[20px] text-[#0a3622]">
+                        {{ message }}
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-custom mt-3">Update Password</button>
-            </form>
-        </div>
+                {% elif 'error' in message.tags %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#f1aeb5] bg-[#f8d7da] text-[20px] text-[#58151c]">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="w-full p-6 rounded-[8px] border-[1px] border-[#9eeaf9] bg-[#cff4fc] text-[20px] text-[#055160]">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form data-name="updatePasswordForm" class="w-full flex flex-col gap-6" method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="update_password" value="1">
+            {% for field in form %}
+                <div class="flex flex-col gap-2">
+                    <label for="{{ field.id_for_label }}" class="text-[20px]">{{ field.label }}</label>
+                    <input
+                        type="{{ field.field.widget.input_type }}"
+                        name="{{ field.name }}"
+                        id="{{ field.id_for_label }}"
+                        value="{{ field.value|default_if_none:'' }}"
+                        class="w-full px-4 py-2 border text-[#f1f1f1] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out {% if field.errors %}border-[#dc3545] focus:border-[#dc3545] focus:[box-shadow:0_0_0_0.2rem_rgba(220,53,69,0.25)] focus-within:border-[#dc3545] focus-within:[box-shadow:0_0_0_0.2rem_rgba(220,53,69,0.25)] focus-visible:border-[#dc3545] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(220,53,69,0.25)]{% else %}patata border-[#444] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)]{% endif %}"
+                    >
+                    {% if field.errors %}
+                        <div class="w-full text-[20px] text-[#dc3545]">
+                            {{ field.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button class="cursor-pointer w-fit px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" type="submit">Update Password</button>
+        </form>
     </div>
-</div>
+</section>
 {% endblock %}

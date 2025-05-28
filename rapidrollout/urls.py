@@ -20,6 +20,8 @@ from django.views.generic import RedirectView
 
 from rapidrollout import views
 
+handler404 = 'rapidrollout.views.custom_404'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 

@@ -3,66 +3,25 @@
 {% block title %}Uninitialized Project - RapidRollout{% endblock %}
 
 {% block content %}
-<style>
-    body {
-        background-color: #1e1e1e;
-        color: #f8f9fa;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    .card-custom {
-        background-color: #2c2f33;
-        border: none;
-        border-radius: 0.5rem;
-        color: #f8f9fa;
-        max-width: 600px;
-        margin: 3rem auto;
-        padding: 2rem 2.5rem;
-        text-align: center;
-    }
-
-    h2 {
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-        color: #fff;
-    }
-
-    p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        color: #ddd;
-    }
-
-    .action-links {
-        display: flex;
-        justify-content: center;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
-    }
-
-    .action-links a {
-        background-color: #5c7cfa;
-        color: #fff;
-        padding: 0.6rem 1.2rem;
-        border-radius: 0.4rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: background-color 0.3s ease;
-    }
-
-    .action-links a:hover {
-        background-color: #4c6ef5;
-    }
-</style>
-
-<div class="card card-custom">
-    <h2>Uninitialized Project</h2>
-    <p>Go to GitHub and send a ping event to finish configuration.</p>
-    <div class="action-links">
-        <a href="{% url 'project_list' %}">Go back</a>
-        <a href="{% url 'delete_project' project.id %}">Delete Project</a>
-        <a href="{% url 'reset_project_secret' project.id %}">Reset Secret</a>
+<section class="py-4 md:py-15 md:py-0 flex-grow h-full w-full flex flex-col gap-4 md:gap-15 items-center">
+    <div class="w-full md:w-[70dvw] lg:w-[35dvw] p-6 flex flex-col items-center gap-6 bg-[#2c2f33] rounded-[8px] shadow-md">
+        <h1 class="w-full text-center inter-semibold text-[36px] leading-snug">Uninitialized Project</h1>
+        <h2 class="w-full text-center inter-medium text-[24px] leading-snug">Go to GitHub and send a ping event to finish configuration.</h2>
+        
+        <div class="w-full md:w-fit flex flex-col md:flex-row justify-center items-center gap-6">
+            <a class="w-full md:w-fit md:flex-1 lg:flex-none text-center px-6 py-3 bg-[#6c757d] hover:bg-[#5c636a] text-[20px] text-[#fff] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" href="{% url 'project_list' %}">Go<br class="hidden md:block lg:hidden"> back</a>
+            <button
+                class="runModalBtns md:flex-1 lg:flex-none cursor-pointer w-full md:w-fit px-6 py-3 bg-[#ef4444] hover:bg-[#b91c1c] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"
+                data-title="Confirm Deletion"
+                data-content="Are you sure you want to delete the project with repository url <span class='inter-semibold break-all lg:break-normal'>{{ project.repository_url }}</span>?"
+                data-submit-href="{% url 'delete_project' project.id %}"
+                data-submit-text="Delete"
+                data-submit-cssclasses='["bg-[#ef4444]", "hover:bg-[#b91c1c]"]'
+            >
+                Delete Project
+            </button>
+            <a class="w-full md:w-fit md:flex-1 lg:flex-none text-center px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" href="{% url 'reset_project_secret' project.id %}">Reset Secret</a>
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}

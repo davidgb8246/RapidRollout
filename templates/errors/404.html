@@ -1,0 +1,12 @@
+{% extends "../generic/generic.html" %}
+
+{% block title %}Page not found - 404 - RapidRollout{% endblock %}
+
+{% block content %}
+<section class="flex-grow h-full w-full flex justify-center items-center md:items-start md:pt-15">
+    <div class="my-4 md:my-0 min-w-full md:min-w-[65dvw] md:max-w-[70dvw] lg:min-w-[25dvw] lg:max-w-[28dvw] px-6 py-12 flex flex-col gap-6 items-center bg-[#2c2f33] rounded-[8px] shadow-md">
+        <h1 class="inter-semibold text-center text-[36px] leading-snug">Ups! Page not found</h1>
+        <button onclick="history.back()" class="cursor-pointer text-center px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Go back</button>
+    </div>
+</section>
+{% endblock %}

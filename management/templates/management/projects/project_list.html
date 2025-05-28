@@ -3,107 +3,37 @@
 {% block title %}Your Projects - RapidRollout{% endblock %}
 
 {% block content %}
-    <style>
-        body {
-            background-color: #1e1e1e;
-            color: #f8f9fa;
-        }
+<section class="py-4 md:py-15 md:py-0 flex-grow h-full w-full flex flex-col gap-6 md:gap-15 items-center relative">
+    <div class="w-full md:w-[70dvw] lg:w-[45dvw] flex flex-col gap-4 md:gap-6">
+        <h1 class="w-full inter-semibold text-[36px] leading-snug">Your Projects</h1>
+        
+        <a href="{% url 'create_project' %}" class="w-fit px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" type="submit">Create New Project</a>
+    </div>
 
-        h2 {
-            margin-bottom: 1.5rem;
-            color: #fff;
-        }
-
-        a {
-            color: #5c7cfa;
-            text-decoration: none;
-            transition: color 0.2s ease-in-out;
-        }
-
-        a:hover {
-            color: #4c6ef5;
-        }
-
-        .new-project-link {
-            display: inline-block;
-            margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            background-color: #3b82f6;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            color: #fff;
-            transition: background-color 0.3s ease;
-            text-align: center;
-        }
-
-        .new-project-link:hover {
-            background-color: #2563eb;
-            color: #fff;
-        }
-
-        ul.project-list {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        ul.project-list li {
-            background-color: #2c2f33;
-            margin-bottom: 0.75rem;
-            padding: 0.8rem 1rem;
-            border-radius: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        ul.project-list li a.repo-link {
-            flex-grow: 1;
-            overflow-wrap: anywhere;
-            color: #60a5fa;
-            font-weight: 500;
-            transition: color 0.2s ease-in-out;
-        }
-
-        ul.project-list li a.repo-link:hover {
-            color: #3b82f6;
-            text-decoration: underline;
-        }
-
-        ul.project-list li a.edit-link {
-            font-size: 0.9rem;
-            background-color: #6b7280;
-            color: #f3f4f6;
-            padding: 0.3rem 0.7rem;
-            border-radius: 0.3rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            margin-left: 1rem;
-            white-space: nowrap;
-        }
-
-        ul.project-list li a.edit-link:hover {
-            background-color: #2563eb;
-            color: #fff;
-        }
-
-        ul.project-list li.no-projects {
-            color: #a0a0a0;
-            font-style: italic;
-            padding: 1rem;
-        }
-    </style>
-
-    <h2>Your Projects</h2>
-    <a href="{% url 'create_project' %}" class="new-project-link">+ New Project</a>
-    <ul class="project-list">
+    <ul class="w-full md:w-[70dvw] lg:w-[45dvw] flex flex-col gap-6 text-[20px]">
         {% for project in projects %}
-            <li>
-                <a class="repo-link" target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a>
-                <a class="edit-link" href="{% url 'edit_project' project.id %}">Edit</a>
+            <li class="w-full p-6 flex flex-wrap flex-col md:flex-row gap-6 md:justify-between items-center bg-[#2c2f33] rounded-[8px] shadow-md">
+                <a class="block break-all text-[#60a5fa] hover:text-[#3b82f6] hover:underline inter-medium text-[24px] transition-colors duration-300 ease-in-out" target="_blank" href="{{ project.repository_url }}">{{ project.repository_url }}</a>
+                
+                <div class="flex flex-row gap-6">
+                    <a href="{% url 'edit_project' project.id %}" class="w-fit px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Edit</a>
+                    <button
+                        class="runModalBtns cursor-pointer w-fit px-6 py-3 bg-[#ef4444] hover:bg-[#b91c1c] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"
+                        data-title="Confirm Deletion"
+                        data-content="Are you sure you want to delete the project with repository url <span class='inter-semibold break-all lg:break-normal'>{{ project.repository_url }}</span>?"
+                        data-submit-href="{% url 'delete_project' project.id %}"
+                        data-submit-text="Delete"
+                        data-submit-cssclasses='["bg-[#ef4444]", "hover:bg-[#b91c1c]"]'
+                    >
+                        Delete
+                    </button>
+                </div>
             </li>
         {% empty %}
-            <li class="no-projects">No projects yet.</li>
+            <li class="w-full p-6 rounded-[8px] border-[1px] border-[#9eeaf9] bg-[#cff4fc] text-[20px] text-[#055160]">
+                No projects yet.
+            </li>
         {% endfor %}
     </ul>
+</section>
 {% endblock %}

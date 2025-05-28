@@ -3,42 +3,10 @@
 {% block title %}Logout - RapidRollout{% endblock %}
 
 {% block content %}
-<style>
-    .logout-container {
-        max-width: 400px;
-        margin: 6rem auto;
-        padding: 2rem 1.5rem;
-        background-color: #2c2f33;
-        border-radius: 0.5rem;
-        color: #f8f9fa;
-        text-align: center;
-    }
-
-    .logout-container p {
-        font-size: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn-link {
-        display: inline-block;
-        padding: 0.5rem 1.5rem;
-        background-color: #5c7cfa;
-        color: #fff;
-        font-weight: 500;
-        border-radius: 0.375rem;
-        text-decoration: none;
-        transition: background-color 0.2s ease-in-out;
-    }
-
-    .btn-link:hover {
-        background-color: #4c6ef5;
-        text-decoration: none;
-        color: #fff;
-    }
-</style>
-
-<div class="logout-container">
-    <p>Logged out successfully!</p>
-    <a href="{% url 'login' %}" class="btn-link">Click here to log in again</a>
-</div>
+<section class="flex-grow h-full w-full flex justify-center items-center md:items-start md:pt-15">
+    <div class="my-4 md:my-0 min-w-full md:min-w-[65dvw] md:max-w-[70dvw] lg:min-w-[25dvw] lg:max-w-[28dvw] px-6 py-12 flex flex-col gap-6 items-center bg-[#2c2f33] rounded-[8px] shadow-md">
+        <h1 class="inter-semibold text-center text-[36px] leading-snug">Logged out successfully!</h1>
+        <a class="text-center px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out" href="{% url 'login' %}">Click here to log in again</a>
+    </div>
+</section>
 {% endblock %}
