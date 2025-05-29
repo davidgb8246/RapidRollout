@@ -38,10 +38,46 @@
             <form method="post" class="flex flex-col md:flex-row gap-6 text-[20px]">
                 {% csrf_token %}
                 {% if is_docker_compose_project %}
-                <button type="submit" name="reboot_project" class="cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>🔄</span><span>Reboot Project</span></button>
-                <button type="submit" name="rebuild_project" class="cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>🔧</span><span>Rebuild Project</span></button>
+                <button 
+                    type="button" 
+                    data-title="Confirm Reboot"
+                    data-content="Are you sure you want to <span class='inter-semibold'>reboot the project</span>?"
+                    data-submit-href=""
+                    data-submit-text="Reboot"
+                    data-callback="rebootProject"
+                    data-submit-cssclasses='["bg-[#ffb300]", "hover:bg-[#e6a700]"]'
+                    class="runModalBtns cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">
+                    <span>🔄</span><span>Reboot Project</span>
+                </button>
+
+                <button 
+                    type="button" 
+                    data-title="Confirm Rebuild"
+                    data-content="Are you sure you want to <span class='inter-semibold'>rebuild the project</span>?"
+                    data-submit-href=""
+                    data-submit-text="Rebuild"
+                    data-callback="rebuildProject"
+                    data-submit-cssclasses='["bg-[#ffb300]", "hover:bg-[#e6a700]"]'
+                    class="runModalBtns cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">
+                    <span>🔧</span><span>Rebuild Project</span>
+                </button>
+                
+                <button type="submit" id="rebootProject" name="reboot_project" class="!hidden cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>🔄</span><span>Reboot Project</span></button>
+                <button type="submit" id="rebuildProject" name="rebuild_project" class="!hidden cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>🔧</span><span>Rebuild Project</span></button>
                 {% endif %}
-                <button type="submit" name="save_private_files" class="cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>💾</span><span>Save Private Files</span></button>
+                <button 
+                    type="button" 
+                    data-title="Confirm Save Private Files"
+                    data-content="Are you sure you want to <span class='inter-semibold'>save private files</span>?"
+                    data-submit-href=""
+                    data-submit-text="Save files"
+                    data-callback="savePrivateFiles"
+                    data-submit-cssclasses='["bg-[#ffb300]", "hover:bg-[#e6a700]"]'
+                    class="runModalBtns cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">
+                    <span>💾</span><span>Save Private Files</span>
+                </button>
+                
+                <button type="submit" id="savePrivateFiles" name="save_private_files" class="!hidden cursor-pointer flex-1 flex flex-col lg:flex-row justify-center gap-2 w-full md:w-fit px-6 py-3 bg-[#ffb300] hover:bg-[#e6a700] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out"><span>💾</span><span>Save Private Files</span></button>
             </form>
         </div>
 
@@ -51,8 +87,27 @@
             <h2 class="inter-semibold text-[24px] lg:text-[28px] leading-snug">🔐 Secret</h2>
             <div class="flex flex-row gap-6 text-[20px]">
                 {% if project.has_secret %}
-                    <a href="{% url 'reset_project_secret' project.id %}?next={{ request.path }}" class="w-fit flex-1 px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-center text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Reset Secret</a>
-                    <a href="{% url 'delete_project_secret' project.id %}" class="w-fit flex-1 px-6 py-3 bg-[#ef4444] hover:bg-[#b91c1c] text-center text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Delete Secret</a>
+                    <button 
+                        type="button" 
+                        data-title="Confirm Reset Secret"
+                        data-content="Are you sure you want to <span class='inter-semibold'>reset the project secret</span>?"
+                        data-submit-href="{% url 'reset_project_secret' project.id %}?next={{ request.path }}"
+                        data-submit-text="Reset Secret"
+                        data-submit-cssclasses='["bg-[#5c7cfa]", "hover:bg-[#4c6ef5]"]'
+                        class="runModalBtns cursor-pointer w-fit flex-1 px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-center text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">
+                        Reset Secret
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        data-title="Confirm Delete Secret"
+                        data-content="Are you sure you want to <span class='inter-semibold'>delete the project secret</span>?"
+                        data-submit-href="{% url 'delete_project_secret' project.id %}"
+                        data-submit-text="Delete Secret"
+                        data-submit-cssclasses='["bg-[#ef4444]", "hover:bg-[#b91c1c]"]'
+                        class="runModalBtns cursor-pointer w-fit flex-1 px-6 py-3 bg-[#ef4444] hover:bg-[#b91c1c] text-center text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">
+                        Delete Secret
+                    </button>
                 {% else %}
                     <a href="{% url 'reset_project_secret' project.id %}?next={{ request.path }}" class="w-fit px-6 py-3 bg-[#5c7cfa] hover:bg-[#4c6ef5] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Create Secret</a>
                 {% endif %}

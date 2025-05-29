@@ -178,20 +178,32 @@
             const modalPopup = document.getElementById('modalPopup');
             const modalBox = modalPopup.querySelector('.modal');
 
-            function setupAndDisplayModal({ title, content, submitBtnOpts = { href: "", text: "", cssClasses: [] } }) {
+            function setupAndDisplayModal({ title, content, submitBtnOpts = { href: "", text: "", cssClasses: [], callback } }) {
                 const modalTitle = modalBox.querySelector(".modalTitle");
                 const modalContent = modalBox.querySelector(".modalContent");
                 const submitBtn = modalBox.querySelector(".submitBtn");
+                const submitBtnCss = "actionBtn submitBtn w-fit px-6 py-3 bg-[#6c757d] hover:bg-[#5c636a] text-[20px] text-[#000] inter-medium rounded-[8px] text-center";
+                const callback = submitBtnOpts['callback'];
 
                 modalTitle.textContent = title;
                 modalContent.innerHTML = content;
 
                 submitBtn.href = submitBtnOpts['href'];
                 submitBtn.textContent = submitBtnOpts['text'];
-                submitBtnOpts.cssClasses.forEach(c => {
-                    if (c == "") return;
-                    submitBtn.classList.add(c);
-                })
+
+                const cssClasses = (submitBtnOpts.cssClasses.length > 0) ? [ ...submitBtnCss.split(" ").filter(e => !e.includes("bg")), ...submitBtnOpts['cssClasses'] ] : submitBtnCss;
+                submitBtn.className = cssClasses.join(" ");
+
+                setTimeout(() => {
+                    submitBtn.className = `${submitBtn.className} transition-colors duration-300 ease-in-out`;
+                }, 300);
+
+                if (callback) {
+                    submitBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        window[callback]();
+                    });
+                }
 
                 showModal();
             }
@@ -233,13 +245,14 @@
 
             const runModalBtns = [ ...document.querySelectorAll(".runModalBtns") ];
             runModalBtns.forEach(b => {
-                b.addEventListener('click', ({ target }) => {
-                    const { title, content, submitHref, submitText, submitCssclasses = '[""]' } = target.dataset;
+                b.addEventListener('click', ({ currentTarget: target }) => {
+                    const { title, content, submitHref, submitText, submitCssclasses = '[""]', callback = null } = target.dataset;
 
                     window.setupAndDisplayModal({
                         title: title || "Invalid call to modal", 
                         content: content || "Invalid call to modal", 
                         submitBtnOpts: { 
+                            callback,
                             href: submitHref || null, 
                             text: submitText || "Invalid call to modal", 
                             cssClasses: JSON.parse(submitCssclasses),
@@ -378,6 +391,23 @@
                 }
             });
 
+            function rebootProject() {
+                const rebootProject = document.getElementById("rebootProject");
+                rebootProject.click();
+
+                console.log(rebootProject)
+            }
+
+            function rebuildProject() {
+                const rebuildProject = document.getElementById("rebuildProject");
+                rebuildProject.click();
+            }
+
+            function savePrivateFiles() {
+                const savePrivateFiles = document.getElementById("savePrivateFiles");
+                savePrivateFiles.click();
+            }
+
             
 
             window.toggleDeployment = toggleDeployment;
@@ -386,6 +416,9 @@
             window.hideModal = hideModal;
             window.isModalOpen = isModalOpen;
             window.replaceStyleForm = replaceStyleForm;
+            window.rebootProject = rebootProject;
+            window.rebuildProject = rebuildProject;
+            window.savePrivateFiles = savePrivateFiles;
         })
     </script>
 </head>
@@ -406,7 +439,7 @@
                 
             <div class="p-6 flex flex-row justify-end gap-6">
                 <button class="actionBtn cancelBtn cursor-pointer w-fit px-6 py-3 bg-[#6c757d] hover:bg-[#5c636a] text-[20px] text-[#fff] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Cancel</button>
-                <a class="actionBtn submitBtn w-fit px-6 py-3 bg-[#6c757d] hover:bg-[#5c636a] text-[20px] text-[#000] inter-medium rounded-[8px] transition-colors duration-300 ease-in-out">Loading...</a>
+                <a class="actionBtn submitBtn w-fit px-6 py-3 bg-[#6c757d] hover:bg-[#5c636a] text-[20px] text-[#000] inter-medium rounded-[8px] text-center">Loading...</a>
             </div>
         </div>
     </div>
@@ -437,8 +470,8 @@
 
                     <div class="flex flex-col items-center gap-6">
                         {% if user.is_authenticated %}
-                        <span class="text-[32px]">
-                            {{ user.get_username }}
+                        <span class="text-[32px] flex justify-center flex-wrap flex-row gap-4">
+                            <span class="block break-all">{{ user.get_username }}</span>
                             {% if user.is_superuser %}
                             (admin)
                             {% else %}
