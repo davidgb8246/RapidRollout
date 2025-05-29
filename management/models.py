@@ -184,7 +184,7 @@ class Project(models.Model):
 
             command = run_command_as_user(f"rm -rf {project_folder}", system_user)
             if not command['success']:
-                errors = [*errors, {'field': 'project_folder', 'message': 'Hubo un problema al borrar la antigua versión del proyecto.'}]
+                errors = [*errors, {'field': 'project_folder', 'message': 'There was a problem deleting the old version of the project.'}]
 
                 return {
                     'data': None,
@@ -315,7 +315,7 @@ class PrivateFile(models.Model):
         if user_home is None:
             return {
                 "success": False,
-                "message": "No se pudo obtener el home del usuario.",
+                "message": "Could not get the user's home directory.",
             }
 
         full_path = (
@@ -340,7 +340,7 @@ class PrivateFile(models.Model):
         if user_home is None:
             return {
                 "success": False,
-                "message": "No se pudo obtener el home del usuario.",
+                "message": "Could not get the user's home directory.",
             }
 
         # Define file path inside user's home directory
@@ -348,7 +348,7 @@ class PrivateFile(models.Model):
         if not file_path_data['success']:
             return {
                 "success": False,
-                "message": f"No se pudo obtener la ruta del fichero: {file_path_data['message']}",
+                "message": f"Could not get the file path: {file_path_data['message']}",
             }
         
         full_path = file_path_data['full_path']
@@ -361,7 +361,7 @@ class PrivateFile(models.Model):
         if not create_dir_result['success']:
             return {
                 "success": False,
-                "message": f"No se pudo crear el directorio: {create_dir_result['message']}",
+                "message": f"Could not create the directory: {create_dir_result['message']}",
             }
 
         # Get decrypted content
@@ -369,7 +369,7 @@ class PrivateFile(models.Model):
         if content is None:
             return {
                 "success": False,
-                "message": "El archivo no tiene contenido válido.",
+                "message": "The file does not contain valid content.",
             }
 
         # Save content to file using here-document to prevent variable expansion
@@ -380,7 +380,7 @@ EOF"""
         if not result['success']:
             return {
                 "success": False,
-                "message": f"No se pudo guardar el archivo: {result['message']}",
+                "message": f"Could not save the file: {result['message']}",
             }
 
         # Set secure permissions
@@ -388,12 +388,12 @@ EOF"""
         if not perm_result['success']:
             return {
                 "success": False,
-                "message": f"No se pudieron asignar permisos: {perm_result['message']}",
+                "message": f"Could not assign permissions: {perm_result['message']}",
             }
 
         return {
             "success": True,
-            "message": f"Archivo guardado correctamente en {full_path}",
+            "message": f"File successfully saved at {full_path}.",
             "path": full_path,
         }
     
@@ -402,7 +402,7 @@ EOF"""
         if not self.is_executable():
             return {
                 "success": False,
-                "message": f"El tipo de fichero {self.file_type} no es un ejecutable."
+                "message": f"The file type {self.file_type} is not an executable."
             }
 
         file_data = self.get_full_path_info()

@@ -8,14 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0008_rename_project_name_project_name'),
+        ('management', '0007_rename_project_name_project_name'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Deployment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, serialize=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('commit_uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DeploymentStatusMessage',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, serialize=False)),
                 ('message', models.TextField()),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('deployment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='status_messages', to='management.deployment')),

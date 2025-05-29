@@ -7,13 +7,17 @@ An application designed to facilitate the automated deployment of containerized 
 - Historical record of deployments performed, including a basic log history.
 - Compatible with environments that use HTTPS and protection via Cloudflare proxy.
 
+## Future Improvements
+
+- Improve the logging system.
+
 ## Installation Guide
 
 ### Step 1:
 As a first step, it is necessary to install the minimum dependencies for the application to function:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip nginx curl git
+apt install -y python3-venv python3-pip python3-dev nginx curl git libmysqlclient-dev
 ```
 
 Next, we will proceed to install Docker using the official script:

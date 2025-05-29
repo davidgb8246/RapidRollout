@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0006_remove_project_secret_hash_project_encrypted_secret'),
+        ('management', '0005_remove_project_secret_hash_project_encrypted_secret'),
     ]
 
     operations = [

@@ -136,7 +136,7 @@ def store_ssh_key_in_user_home(system_user, ssh_key):
     if system_user_home is None:
         return {
             "success": False,
-            "message": "No se pudo obtener el home del usuario.",
+            "message": "Could not get the user's home directory.",
         }
     
     ssh_key_file_path = f"{system_user_home}/.ssh/{system_user}-sshKey"
@@ -160,7 +160,7 @@ def delete_ssh_key_in_user_home(system_user):
     if system_user_home is None:
         return {
             "success": False,
-            "message": "No se pudo obtener el home del usuario.",
+            "message": "Could not get the user's home directory.",
         }
 
     ssh_key_file_path = f"{system_user_home}/.ssh/{system_user}-sshKey"
@@ -168,14 +168,14 @@ def delete_ssh_key_in_user_home(system_user):
     if not file_check_result['success']:
         return {
             "success": False,
-            "message": f"El archivo de clave SSH {ssh_key_file_path} no existe.",
+            "message": f"The SSH key file {ssh_key_file_path} does not exist.",
         }
 
     delete_result = run_command_as_user(f"rm -f {ssh_key_file_path}", system_user)
     if delete_result['success']:
         return {
             "success": True,
-            "message": f"Clave SSH eliminada de {ssh_key_file_path}.",
+            "message": f"SSH key deleted from {ssh_key_file_path}.",
         }
     else:
         return delete_result

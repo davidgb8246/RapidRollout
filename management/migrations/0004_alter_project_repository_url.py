@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0004_alter_project_id_alter_userprofile_id'),
+        ('management', '0003_project_encrypted_ssh_key'),
     ]
 
     operations = [

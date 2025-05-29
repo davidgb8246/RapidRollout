@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0012_alter_deployment_commit_id'),
+        ('management', '0010_alter_deployment_commit_id'),
     ]
 
     operations = [

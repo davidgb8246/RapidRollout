@@ -44,12 +44,12 @@ class GithubViewSet(viewsets.ViewSet):
         clone_repo_command = clone_git_repo_with_ssh_key(ssh_key_file_path, project_clone_url, system_user, user_home, project_name)
         if not clone_repo_command['success']:
             deployment.set_status("failed")
-            deployment.add_status_message("Hubo un problema al descargar el repositorio remoto.")
+            deployment.add_status_message("There was a problem downloading the remote repository.")
             deployment.add_status_message(clone_repo_command['message'])
 
             return Response({
                 'data': None,
-                'errors': [{'field': 'repository', 'message': 'Hubo un problema al descargar el repositorio remoto.'}],
+                'errors': [{'field': 'repository', 'message': 'There was a problem downloading the remote repository.'}],
                 'status': 'REPOSITORY_CLONE_FAILED',
             }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -64,12 +64,12 @@ class GithubViewSet(viewsets.ViewSet):
                         deployment.set_status("failed")
                         priv_files_failed = True
         
-                    deployment.add_status_message(f"Hubo un problema al guardar el fichero privado con id: {file.id}.")
+                    deployment.add_status_message(f"There was a problem saving the private file with ID: {file.id}.")
         
         if priv_files_failed:
             return Response({
                 'data': None,
-                'errors': [{'field': 'private_files', 'message': 'Hubo un problema al cargar los ficheros privados en el sistema.'}],
+                'errors': [{'field': 'private_files', 'message': 'There was a problem loading the private files into the system.'}],
                 'status': 'PRIVATE_FILES_LOAD_FAILED',
             }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -77,11 +77,11 @@ class GithubViewSet(viewsets.ViewSet):
             delete_key_command = delete_ssh_key_in_user_home(system_user)
             if not delete_key_command['success']:
                 deployment.set_status("failed")
-                deployment.add_status_message("Hubo un problema al eliminar la clave SSH del sistema.")
+                deployment.add_status_message("There was a problem deleting the SSH key from the system.")
 
                 return Response({
                     'data': None,
-                    'errors': [{'field': 'ssh_key', 'message': 'Hubo un problema al eliminar la clave SSH del sistema.'}],
+                    'errors': [{'field': 'ssh_key', 'message': 'There was a problem deleting the SSH key from the system.'}],
                     'status': 'SSH_KEY_LOAD_FAILED',
                 }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -92,11 +92,11 @@ class GithubViewSet(viewsets.ViewSet):
             command = run_command_as_user(f"cd {project_folder} && docker compose up -d --build", system_user)
             if not command['success']:
                 deployment.set_status("failed")
-                deployment.add_status_message("Hubo un problema al levantar el entorno Docker Compose.")
+                deployment.add_status_message("There was a problem starting the Docker Compose environment.")
 
                 return Response({
                     'data': None,
-                    'errors': [{'field': 'compose', 'message': 'Hubo un problema al levantar el entorno Docker Compose.'}],
+                    'errors': [{'field': 'compose', 'message': 'There was a problem starting the Docker Compose environment.'}],
                     'status': 'DOCKER_COMPOSE_UP_FAILED',
                 }, status=status.HTTP_400_BAD_REQUEST)
             
@@ -110,12 +110,12 @@ class GithubViewSet(viewsets.ViewSet):
                         deployment.set_status("failed")
                         exec_files_failed = True
                     
-                    deployment.add_status_message(f"Hubo un problema al ejecutar el script con id: {file.id}.")
+                    deployment.add_status_message(f"There was a problem running the script with ID: {file.id}.")
         
         if exec_files_failed:
             return Response({
                 'data': None,
-                'errors': [{'field': 'after_scripts_files', 'message': 'Hubo un problema al ejecutar los scripts posteriores de construcción del proyecto.'}],
+                'errors': [{'field': 'after_scripts_files', 'message': 'There was a problem running the project\'s post-build scripts.'}],
                 'status': 'AFTER_SCRIPTS_FILES_EXECUTE_FAILED',
             }, status=status.HTTP_400_BAD_REQUEST)
             
@@ -123,7 +123,7 @@ class GithubViewSet(viewsets.ViewSet):
         return Response({
             'data': None,
             'errors': None,
-            'status': 'GITHUB_PUSH_EVENT_RECEIVED',
+            'status': 'GITHUB_PUSH_EVENT_COMPLETED',
         }, status=status.HTTP_200_OK)
 
 
@@ -148,11 +148,11 @@ class GithubViewSet(viewsets.ViewSet):
         system_user = project_owner.get_sys_username()
         if not sys_get_or_create_user(system_user):
             deployment.set_status("failed")
-            deployment.add_status_message("Hubo un problema al crear el usuario en el sistema.")
+            deployment.add_status_message("There was a problem creating the user in the system.")
 
             return Response({
                 'data': None,
-                'errors': [{'field': 'system_user', 'message': 'Hubo un problema al crear el usuario en el sistema.'}],
+                'errors': [{'field': 'system_user', 'message': 'There was a problem creating the user in the system.'}],
                 'status': 'USER_CREATION_FAILED',
             }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -167,11 +167,11 @@ class GithubViewSet(viewsets.ViewSet):
             store_key_command = store_ssh_key_in_user_home(system_user, ssh_key)
             if not store_key_command['success']:
                 deployment.set_status("failed")
-                deployment.add_status_message("Hubo un problema al guardar temporalmente la clave SSH en el sistema.")
+                deployment.add_status_message("There was a problem temporarily saving the SSH key in the system.")
 
                 return Response({
                     'data': None,
-                    'errors': [{'field': 'ssh_key', 'message': 'Hubo un problema al guardar temporalmente la clave SSH en el sistema.'}],
+                    'errors': [{'field': 'ssh_key', 'message': 'There was a problem temporarily saving the SSH key in the system.'}],
                     'status': 'SSH_KEY_LOAD_FAILED',
                 }, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -189,7 +189,8 @@ class GithubViewSet(viewsets.ViewSet):
             "project_name": project_name,
         }
 
-        if check_folder_exists(project_folder, system_user):
+        project_exists = check_folder_exists(project_folder, system_user)
+        if project_exists:
             errors = []
             is_compose_project = check_docker_compose_environment(project_folder, system_user)
 
@@ -200,7 +201,7 @@ class GithubViewSet(viewsets.ViewSet):
 
             command = run_command_as_user(f"rm -rf {project_folder}", system_user)
             if not command['success']:
-                errors = [*errors, {'field': 'project_folder', 'message': 'Hubo un problema al borrar la antigua versión del proyecto.'}]
+                errors = [*errors, {'field': 'project_folder', 'message': 'There was a problem deleting the old version of the project.'}]
                 deployment.set_status("failed")
                 deployment.add_status_message("\n".join([error['message'] for error in errors]))
 
@@ -209,21 +210,27 @@ class GithubViewSet(viewsets.ViewSet):
                 'errors': errors,
                 'status': 'DELETE_OLD_PROJECT_VERSION_FAILED',
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            # Continua de manera asincrona la ejecución normal.
-            thread = threading.Thread(target=self.deploy_tasks, args=(variables,))
-            thread.start()
+            
+        # Continua de manera asincrona la ejecución normal.
+        thread = threading.Thread(target=self.deploy_tasks, args=(variables,))
+        thread.start()
 
+        if not project_exists:
             return Response({
                 'data': {
-                    "message": "Parece que es la primera vez desplegando el proyecto, asi que tardará un rato. Comprueba el panel de despliegue para más información."
+                    "message": "It seems this is the first time deploying the project, so it will take a while. Check the deployment panel for more information."
+                },
+                'errors': None,
+                'status': 'PROJECT_DEPLOYEMENT_FIRST_BEGIN',
+            }, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response({
+                'data': {
+                    "message": "We have received the code update. Check the deployment panel for more information."
                 },
                 'errors': None,
                 'status': 'PROJECT_DEPLOYEMENT_BEGIN',
-                }, status=status.HTTP_202_ACCEPTED)
-
-        # Continua la ejecución normal
-        return self.deploy_tasks(variables)
+            }, status=status.HTTP_202_ACCEPTED)
         
 
     @action(detail=False, methods=['post'])
@@ -237,7 +244,7 @@ class GithubViewSet(viewsets.ViewSet):
         if not github_event in supported_events.keys():
             return Response({
                 'data': None,
-                'errors': [{'field': 'github_event', 'message': 'Evento no soportado.'}],
+                'errors': [{'field': 'github_event', 'message': 'Unsupported event.'}],
                 'status': 'GITHUB_EVENT_NOT_SUPPORTED',
             }, status=status.HTTP_202_ACCEPTED)
         
@@ -247,7 +254,7 @@ class GithubViewSet(viewsets.ViewSet):
         except json.JSONDecodeError:
             return Response({
                 'data': None,
-                'errors': [{'field': 'body', 'message': 'JSON Payload inválido.'}],
+                'errors': [{'field': 'body', 'message': 'Invalid JSON payload.'}],
                 'status': 'INVALID_PAYLOAD',
             }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -257,7 +264,7 @@ class GithubViewSet(viewsets.ViewSet):
         if not project:
             return Response({
             'data': None,
-            'errors': [{'field': 'html_url', 'message': 'Este proyecto no esta registrado en el servicio de despliegue.'}],
+            'errors': [{'field': 'html_url', 'message': 'This project is not registered in the deployment service.'}],
             'status': 'PROJECT_NOT_REGISTERED',
             }, status=status.HTTP_404_NOT_FOUND)
         
@@ -267,7 +274,7 @@ class GithubViewSet(viewsets.ViewSet):
         if not verify_github_signature(request.body, secret_token, signature_header):
             return Response({
                 'data': None,
-                'errors': [{'field': 'signature', 'message': 'Firma no válida. Comprueba que el \'secret\' configurado sea el mismo que en la configuración del repositorio de código.'}],
+                'errors': [{'field': 'signature', 'message': 'Invalid signature. Make sure the configured \'secret\' is the same as in the code repository settings.'}],
                 'status': 'SIGNATURE_VERIFICATION_FAILED',
             }, status=status.HTTP_403_FORBIDDEN)
 
@@ -284,9 +291,9 @@ class GithubViewSet(viewsets.ViewSet):
 
         if not deployment_id or not message or not request_secret:
             errors = []
-            if not request_secret: errors.append({'field': 'request_secret', 'message': 'El campo "request_secret" es requerido.'})
-            if not deployment_id: errors.append({'field': 'deployment_id', 'message': 'El campo "deployment_id" es requerido.'})
-            if not message: errors.append({'field': 'message', 'message': 'El campo "message" es requerido.'})
+            if not request_secret: errors.append({'field': 'request_secret', 'message': 'The "request_secret" field is required.'})
+            if not deployment_id: errors.append({'field': 'deployment_id', 'message': 'The "deployment_id" field is required.'})
+            if not message: errors.append({'field': 'message', 'message': 'The "message" field is required.'})
 
             return Response({
                 'data': None,
@@ -298,7 +305,7 @@ class GithubViewSet(viewsets.ViewSet):
         if not deployment:
             return Response({
             'data': None,
-            'errors': [{'field': 'deployment', 'message': 'Ese despliegue no esta registrado en el servicio de despliegue.'}],
+            'errors': [{'field': 'deployment', 'message': 'That deployment is not registered in the deployment service.'}],
             'status': 'DEPLOYMENT_NOT_REGISTERED',
             }, status=status.HTTP_404_NOT_FOUND)
         
@@ -306,7 +313,7 @@ class GithubViewSet(viewsets.ViewSet):
         if not project.check_secret(request_secret):
             return Response({
                 'data': None,
-                'errors': [{'field': 'secret', 'message': 'La clave secreta es incorrecta.'}],
+                'errors': [{'field': 'secret', 'message': 'The secret key is incorrect.'}],
                 'status': 'AUTHENTICATION_FAILED',
             }, status=status.HTTP_403_FORBIDDEN)
 

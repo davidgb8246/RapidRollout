@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0005_alter_project_repository_url'),
+        ('management', '0004_alter_project_repository_url'),
     ]
 
     operations = [

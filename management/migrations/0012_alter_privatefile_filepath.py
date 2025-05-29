@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0013_privatefile'),
+        ('management', '0011_privatefile'),
     ]
 
     operations = [

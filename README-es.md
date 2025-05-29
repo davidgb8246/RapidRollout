@@ -7,13 +7,17 @@ Una aplicación diseñada para facilitar el despliegue automatizado de aplicacio
 - Registro histórico de despliegues realizados, incluyendo un historial de logs básico.
 - Compatible con entornos que utilizan HTTPS y protección mediante proxy de Cloudflare.
 
+## Mejoras a futuro
+
+- Mejorar el sistema de registros.
+
 ## Guía de Instalación
 
 ### Paso 1:
 Como primer paso, es necesario instalar las dependencias mínimas para el funcionamiento de la aplicación:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip nginx curl git
+apt install -y python3-venv python3-pip python3-dev nginx curl git libmysqlclient-dev
 ```
 
 A continuación, procederemos a instalar Docker utilizando el script oficial:

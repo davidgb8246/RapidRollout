@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('management', '0009_deployment_deploymentstatusmessage'),
+        ('management', '0008_deployment_deploymentstatusmessage'),
     ]
 
     operations = [
