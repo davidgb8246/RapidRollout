@@ -202,7 +202,7 @@ def edit_project(request, project_id):
         'formset': formset,
         'project': project,
         'deployments_data': deployments_data,
-        'action_executed': reboot_successfully or rebuild_successfully or private_files_saved_successfully,
+        'action_executed': (reboot_successfully is not None) or (rebuild_successfully is not None) or (private_files_saved_successfully is not None),
         'saved_successfully': saved_successfully,
         'reboot_successfully': reboot_successfully,
         'rebuild_successfully': rebuild_successfully,

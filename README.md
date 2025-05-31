@@ -10,6 +10,7 @@ An application designed to facilitate the automated deployment of containerized 
 ## Future Improvements
 
 - Improve the logging system.
+- Add pagination and search functionality to the project and user listings.
 
 ## Installation Guide
 
@@ -17,7 +18,7 @@ An application designed to facilitate the automated deployment of containerized 
 As a first step, it is necessary to install the minimum dependencies for the application to function:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip python3-dev nginx curl git libmysqlclient-dev
+apt install -y python3-venv python3-pip python3-dev nginx mariadb-server curl git libmysqlclient-dev pkg-config
 ```
 
 Next, we will proceed to install Docker using the official script:
@@ -65,14 +66,40 @@ cp .env.example .env
 nano .env
 ```
 
-Specifically, a random string should be assigned to `SECRET_KEY`, and valid domains should be defined in `ALLOWED_HOSTS`, separated by commas.
+Specifically, a random string must be assigned to `SECRET_KEY` and the valid domains defined in `ALLOWED_HOSTS`, separated by commas.
 ```env
 DEBUG=False
 SECRET_KEY=your-very-secret-key
 ALLOWED_HOSTS=rapidrollout.domain.example,rapid-deploy.domain.example
+
+...
 ```
+> [!NOTE]  
+> Please complete the configuration of the `.env` file by adding the necessary fields that were not detailed in the previous section, making sure to include all the required information for the proper functioning of the project environment.
 
 ### Step 5:
+Once the project is configured, it is necessary to create the database and the corresponding user in the Database Management System (DBMS).
+Below are the steps to perform this setup using MariaDB:
+
+Access the MariaDB client as the root user:
+```bash
+mariadb -u root -p
+```
+
+Run the following SQL commands to create the database, the user, and assign the privileges:
+
+```sql
+CREATE DATABASE your_db_name;
+CREATE USER 'your_db_user'@'127.0.0.1' IDENTIFIED BY 'your_db_password';
+GRANT ALL PRIVILEGES ON your_db_name.* TO 'your_db_user'@'127.0.0.1' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+> [!NOTE]  
+> Replace `your_db_name`, `your_db_user`, and `your_db_password` with the values corresponding to your development environment.
+
+### Step 6:
 At this point, necessary database migrations will be applied, and a `superuser` will be created.
 
 > [!NOTE]  
@@ -84,7 +111,7 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-### Step 6:
+### Step 7:
 Next, collect the application's static files and set the appropriate permissions for proper operation with Nginx.
 ```bash
 python manage.py collectstatic
@@ -95,7 +122,7 @@ find /var/www/RapidRollout -type f -exec chmod 644 {} \;
 chmod +x /var/www/RapidRollout/venv/bin/*
 ```
 
-### Step 7:
+### Step 8:
 Configure the system service that will keep the application running continuously under the `root` user.
 ```bash
 mv /var/www/RapidRollout/resources/rapidrollout.service /etc/systemd/system/
@@ -110,7 +137,7 @@ systemctl start rapidrollout.service
 systemctl status rapidrollout.service
 ```
 
-### Step 8:
+### Step 9:
 The next step is to configure Nginx to enforce SSL usage and redirect traffic to the Gunicorn server.
 
 Copy the site configuration file, modify it to reflect the domain and SSL certificate locations, then enable the corresponding site.
@@ -129,7 +156,7 @@ Once configuration is complete, reload the Nginx service to apply the changes.
 nginx -t && systemctl reload nginx
 ```
 
-### Step 9:
+### Step 10:
 Finally, the application will be available from the previously configured domain and ready for use.
 
 ## Contributors ✨

@@ -13,12 +13,12 @@ class DeploymentStatusMessageSerializer(serializers.ModelSerializer):
 
     def get_timestamp_formatted(self, obj):
         if obj.timestamp:
-            return obj.timestamp.astimezone(timezone.utc).strftime("%A, %B %d, %Y %H:%M:%S")
+            return obj.timestamp.astimezone(timezone.utc).strftime("%A, %B %d, %Y %H:%M:%S.%f")[:-3]
         return ''
 
 
 class DeploymentSerializer(serializers.ModelSerializer):
-    status_messages = DeploymentStatusMessageSerializer(many=True, read_only=True)
+    status_messages = serializers.SerializerMethodField()
     created_at_formatted = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,6 +29,10 @@ class DeploymentSerializer(serializers.ModelSerializer):
         if obj.created_at:
             return obj.created_at.astimezone(timezone.utc).strftime("%A, %B %d, %Y %H:%M:%S")
         return ''
+
+    def get_status_messages(self, obj):
+        messages = obj.status_messages.order_by('timestamp')
+        return DeploymentStatusMessageSerializer(messages, many=True).data
 
 
 class ProjectDeploymentSerializer(serializers.ModelSerializer):

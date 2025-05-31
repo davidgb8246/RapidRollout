@@ -10,6 +10,7 @@ Una aplicación diseñada para facilitar el despliegue automatizado de aplicacio
 ## Mejoras a futuro
 
 - Mejorar el sistema de registros.
+- Agregar paginación y busqueda a los listados de proyectos y usuarios.
 
 ## Guía de Instalación
 
@@ -17,7 +18,7 @@ Una aplicación diseñada para facilitar el despliegue automatizado de aplicacio
 Como primer paso, es necesario instalar las dependencias mínimas para el funcionamiento de la aplicación:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip python3-dev nginx curl git libmysqlclient-dev
+apt install -y python3-venv python3-pip python3-dev nginx mariadb-server curl git libmysqlclient-dev pkg-config
 ```
 
 A continuación, procederemos a instalar Docker utilizando el script oficial:
@@ -38,7 +39,6 @@ curl -sSL https://get.docker.com/ | CHANNEL=stable bash
 >
 > sudo -u <usuarioNoRoot> bash -c "dockerd-rootless-setuptool.sh install"
 > ```
-> 
 
 ### Paso 2:
 Después, se debe clonar el repositorio de la aplicación en el directorio `/var/www/`, o bien descargarlo manualmente.
@@ -71,9 +71,35 @@ Específicamente, deberá asignarse una cadena aleatoria a `SECRET_KEY` y defini
 DEBUG=False
 SECRET_KEY=your-very-secret-key
 ALLOWED_HOSTS=rapidrollout.domain.example,rapid-deploy.domain.example
+
+...
 ```
+> [!NOTE]  
+> Por favor, complete la configuración del archivo `.env` agregando los campos necesarios que no se detallaron en la sección anterior, asegurándose de incluir toda la información requerida para el correcto funcionamiento del entorno del proyecto.
 
 ### Paso 5:
+Una vez configurado el proyecto, es necesario crear la base de datos y el usuario correspondiente en el Sistema de Gestión de Bases de Datos (SGBD).
+A continuación, se detallan los pasos para realizar esta configuración utilizando MariaDB:
+
+Acceder al cliente de MariaDB como usuario root:
+```bash
+mariadb -u root -p
+```
+
+Ejecutar los siguientes comandos SQL para crear la base de datos, el usuario y asignar los privilegios:
+
+```sql
+CREATE DATABASE your_db_name;
+CREATE USER 'your_db_user'@'127.0.0.1' IDENTIFIED BY 'your_db_password';
+GRANT ALL PRIVILEGES ON your_db_name.* TO 'your_db_user'@'127.0.0.1' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+> [!NOTE]  
+> Reemplace `your_db_name`, `your_db_user` y `your_db_password` con los valores correspondientes a su entorno de desarrollo.
+
+### Paso 6:
 En este punto, se aplicarán las migraciones necesarias a la base de datos y se creará un `superusuario`.
 
 > [!NOTE]  
@@ -85,7 +111,7 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-### Paso 6:
+### Paso 7:
 A continuación, se recopilarán los archivos estáticos de la aplicación y se establecerán los permisos adecuados para su correcto funcionamiento con Nginx.
 ```bash
 python manage.py collectstatic
@@ -96,7 +122,7 @@ find /var/www/RapidRollout -type f -exec chmod 644 {} \;
 chmod +x /var/www/RapidRollout/venv/bin/*
 ```
 
-### Paso 7:
+### Paso 8:
 Se configurará el servicio del sistema que permitirá mantener la aplicación en ejecución de forma continua bajo el usuario `root`.
 ```bash
 mv /var/www/RapidRollout/resources/rapidrollout.service /etc/systemd/system/
@@ -111,7 +137,7 @@ systemctl start rapidrollout.service
 systemctl status rapidrollout.service
 ```
 
-### Paso 8:
+### Paso 9:
 El siguiente paso consiste en la configuración de Nginx para forzar el uso de SSL y redirigir el tráfico hacia el servidor Gunicorn.
 
 Se copiará el archivo de configuración del sitio, se modificará para reflejar el dominio y la ubicación de los certificados SSL, y luego se habilitará el sitio correspondiente.
@@ -130,7 +156,7 @@ Una vez completada la configuración, se recargará el servicio de Nginx para ap
 nginx -t && systemctl reload nginx
 ```
 
-### Paso 9:
+### Paso 10:
 Finalmente, la aplicación estará disponible desde el dominio configurado previamente, y estará lista para su uso.
 
 ## Colaboradores ✨
