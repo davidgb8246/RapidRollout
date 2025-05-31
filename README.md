@@ -18,7 +18,9 @@ An application designed to facilitate the automated deployment of containerized 
 As a first step, it is necessary to install the minimum dependencies for the application to function:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip python3-dev nginx mariadb-server curl git libmysqlclient-dev pkg-config
+apt install -y python3-venv python3-pip python3-dev \
+    mariadb-server default-libmysqlclient-dev nginx \
+    curl git pkg-config build-essential
 ```
 
 Next, we will proceed to install Docker using the official script:

@@ -18,7 +18,9 @@ Una aplicación diseñada para facilitar el despliegue automatizado de aplicacio
 Como primer paso, es necesario instalar las dependencias mínimas para el funcionamiento de la aplicación:
 ```bash
 apt update -y
-apt install -y python3-venv python3-pip python3-dev nginx mariadb-server curl git libmysqlclient-dev pkg-config
+apt install -y python3-venv python3-pip python3-dev \
+    mariadb-server default-libmysqlclient-dev nginx \
+    curl git pkg-config build-essential
 ```
 
 A continuación, procederemos a instalar Docker utilizando el script oficial:
