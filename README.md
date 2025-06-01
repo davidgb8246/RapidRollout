@@ -12,6 +12,9 @@ An application designed to facilitate the automated deployment of containerized 
 - Improve the logging system.
 - Add pagination and search functionality to the project and user listings.
 
+## User Guide
+Click [here](https://github.com/davidgb8246/RapidRollout/wiki) to access the user guide for the application.
+
 ## Installation Guide
 
 ### Step 1:
