@@ -165,18 +165,12 @@ class ProjectEditForm(forms.ModelForm):
             'repository_url': forms.TextInput(attrs={'class': 'order-2 w-full px-4 py-2 border border-[#444] text-[#f1f1f1] focus:border-[#5c7cfa] focus:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-within:border-[#5c7cfa] focus-within:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] focus-visible:border-[#5c7cfa] focus-visible:[box-shadow:0_0_0_0.2rem_rgba(92,124,250,0.25)] rounded-[8px] bg-[#3a3b3c] focus:bg-[#27292a] text-[20px] placeholder-[#a0a0a0] outline-none transition-all duration-200 ease-in-out'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['repository_url'].disabled = True
+
     def clean_repository_url(self):
-        url = self.cleaned_data['repository_url'].strip()
-        url = url.rstrip('/')
-
-        qs = Project.objects.filter(repository_url=url)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-
-        if qs.exists():
-            raise forms.ValidationError("A project with this repository URL already exists.")
-
-        return url
+        return self.instance.repository_url
 
     def save(self, commit=True):
         instance = super().save(commit=False)
