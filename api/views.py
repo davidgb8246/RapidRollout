@@ -144,6 +144,7 @@ class GithubViewSet(viewsets.ViewSet):
         if project_name is None:
             project.set_name(data['repository'].get('name', None))
             project_name = project.name
+            project.set_as_initialized()
 
         system_user = project_owner.get_sys_username()
         if not sys_get_or_create_user(system_user):
