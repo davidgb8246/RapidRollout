@@ -7,11 +7,6 @@ An application designed to facilitate the automated deployment of containerized 
 - Historical record of deployments performed, including a basic log history.
 - Compatible with environments that use HTTPS and protection via Cloudflare proxy.
 
-## Future Improvements
-
-- Improve the logging system.
-- Add pagination and search functionality to the project and user listings.
-
 ## User Guide
 Click [here](https://github.com/davidgb8246/RapidRollout/wiki) to access the user guide for the application.
 

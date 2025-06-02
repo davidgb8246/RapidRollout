@@ -7,11 +7,6 @@ Una aplicación diseñada para facilitar el despliegue automatizado de aplicacio
 - Registro histórico de despliegues realizados, incluyendo un historial de logs básico.
 - Compatible con entornos que utilizan HTTPS y protección mediante proxy de Cloudflare.
 
-## Mejoras a futuro
-
-- Mejorar el sistema de registros.
-- Agregar paginación y busqueda a los listados de proyectos y usuarios.
-
 ## Guía de Uso
 Haga [clic aquí](https://github.com/davidgb8246/RapidRollout/wiki) para acceder a la guía de uso de la aplicación.
 
