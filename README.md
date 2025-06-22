@@ -159,7 +159,18 @@ nginx -t && systemctl reload nginx
 ### Step 10:
 Finally, the application will be available from the previously configured domain and ready for use.
 
-## Contributors ✨
-- [davidgb8246](https://github.com/davidgb8246)<br><br>
+## 👥 Contributors
 
-Copyright (C) 2025
+### Author
+- **[davidgb8246](https://github.com/davidgb8246)** – Creator and lead developer of RapidRollout
+
+### How to Contribute
+Contributions are welcome! To contribute, please fork the repository, make your changes, and submit a pull request.  
+Make sure your contributions comply with the licensing and attribution requirements.
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)** with Additional Terms.
+See the [LICENSE](./LICENSE) file for full legal terms, including the additional conditions pursuant to AGPLv3 Section 7.
